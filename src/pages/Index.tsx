@@ -1,4 +1,3 @@
-
 import { Monitor, BookOpen, Target, TrendingUp, Brain, Users, Clock, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,16 +41,19 @@ export default function Index() {
   // Get questions for the current week specifically
   const { data: currentWeekQuestions = [] } = usePracticeQuestions(undefined, currentWeek);
   
-  // Calculate progress for current week only
+  // Calculate progress for current week only - count unique questions attempted
   const currentWeekAttempts = quizAttempts.filter(attempt => {
     // Check if this attempt matches questions from current week by comparing total questions
     const weekQuestionCount = currentWeekQuestions.length;
     return attempt.total_questions === weekQuestionCount;
   });
   
-  const questionsAnsweredCurrentWeek = currentWeekAttempts.reduce((sum, attempt) => sum + attempt.total_questions, 0);
+  // For progress calculation, we want to show completion based on whether questions have been attempted
+  // If there are any attempts for this week, show the total questions available as "completed"
+  const questionsAnsweredCurrentWeek = currentWeekAttempts.length > 0 ? currentWeekQuestions.length : 0;
   const totalCorrectCurrentWeek = currentWeekAttempts.reduce((sum, attempt) => sum + attempt.score, 0);
-  const avgScore = questionsAnsweredCurrentWeek > 0 ? Math.round((totalCorrectCurrentWeek / questionsAnsweredCurrentWeek) * 100) : 0;
+  const totalAttemptsCurrentWeek = currentWeekAttempts.reduce((sum, attempt) => sum + attempt.total_questions, 0);
+  const avgScore = totalAttemptsCurrentWeek > 0 ? Math.round((totalCorrectCurrentWeek / totalAttemptsCurrentWeek) * 100) : 0;
   
   // Practice progress should show completed questions vs available questions for current week
   const totalQuestionsCurrentWeek = currentWeekQuestions.length;
