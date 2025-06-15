@@ -16,14 +16,19 @@ const Flashcards = () => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [studiedCards, setStudiedCards] = useState<boolean[]>([]);
   const [correctCards, setCorrectCards] = useState<boolean[]>([]);
+  const [showCompletion, setShowCompletion] = useState(false);
 
   const { data: topics = [], isLoading: topicsLoading } = useQuizTopics();
   const { data: flashcards = [], isLoading: flashcardsLoading } = useFlashcards(selectedTopic?.id);
 
   const currentFlashcard = flashcards[currentCard];
   const totalCards = flashcards.length;
-  const progress = studiedCards.filter(Boolean).length / totalCards * 100;
+  const studiedCount = studiedCards.filter(Boolean).length;
+  const progress = studiedCount / totalCards * 100;
   const correctCount = correctCards.filter(Boolean).length;
+
+  // Check if all cards have been studied
+  const allCardsStudied = studiedCount === totalCards && totalCards > 0;
 
   const handleTopicSelect = (topic: QuizTopic) => {
     setSelectedTopic(topic);
@@ -31,6 +36,7 @@ const Flashcards = () => {
     setIsFlipped(false);
     setStudiedCards([]);
     setCorrectCards([]);
+    setShowCompletion(false);
   };
 
   const handleBackToTopics = () => {
@@ -39,6 +45,7 @@ const Flashcards = () => {
     setIsFlipped(false);
     setStudiedCards([]);
     setCorrectCards([]);
+    setShowCompletion(false);
   };
 
   const handleFlip = () => {
@@ -55,13 +62,33 @@ const Flashcards = () => {
     newCorrectCards[currentCard] = isCorrect;
     setCorrectCards(newCorrectCards);
     
-    // Auto advance to next card
-    setTimeout(() => {
-      if (currentCard < totalCards - 1) {
-        setCurrentCard(currentCard + 1);
-        setIsFlipped(false);
-      }
-    }, 500);
+    // Check if this was the last card to be studied
+    const newStudiedCount = studiedCards.filter(Boolean).length;
+    if (newStudiedCount === totalCards) {
+      setShowCompletion(true);
+    } else {
+      // Auto advance to next unstudied card or next card
+      setTimeout(() => {
+        const nextCard = findNextCard();
+        if (nextCard !== null) {
+          setCurrentCard(nextCard);
+          setIsFlipped(false);
+        }
+      }, 500);
+    }
+  };
+
+  const findNextCard = () => {
+    // Find next unstudied card
+    for (let i = currentCard + 1; i < totalCards; i++) {
+      if (!studiedCards[i]) return i;
+    }
+    // If no unstudied cards after current, wrap around
+    for (let i = 0; i < currentCard; i++) {
+      if (!studiedCards[i]) return i;
+    }
+    // If all cards studied, just go to next card or stay
+    return currentCard < totalCards - 1 ? currentCard + 1 : currentCard;
   };
 
   const handleNextCard = () => {
@@ -83,6 +110,7 @@ const Flashcards = () => {
     setIsFlipped(false);
     setStudiedCards([]);
     setCorrectCards([]);
+    setShowCompletion(false);
   };
 
   const getDifficultyColor = (difficulty: string) => {
@@ -191,7 +219,7 @@ const Flashcards = () => {
                 <Progress value={progress} className="h-3" />
                 <div className="grid grid-cols-3 gap-4 mt-4">
                   <div className="text-center p-3 bg-blue-50 rounded-lg">
-                    <div className="text-xl font-bold text-blue-600">{studiedCards.filter(Boolean).length}</div>
+                    <div className="text-xl font-bold text-blue-600">{studiedCount}</div>
                     <div className="text-sm text-gray-600">Studied</div>
                   </div>
                   <div className="text-center p-3 bg-green-50 rounded-lg">
@@ -199,14 +227,37 @@ const Flashcards = () => {
                     <div className="text-sm text-gray-600">Correct</div>
                   </div>
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
-                    <div className="text-xl font-bold text-gray-600">{totalCards - studiedCards.filter(Boolean).length}</div>
+                    <div className="text-xl font-bold text-gray-600">{totalCards - studiedCount}</div>
                     <div className="text-sm text-gray-600">Remaining</div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Flashcard */}
+            {/* Show completion message if all cards studied */}
+            {showCompletion || allCardsStudied ? (
+              <Card className="mb-6 bg-green-50/70 backdrop-blur border-green-200">
+                <CardContent className="p-6 text-center">
+                  <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-3" />
+                  <h3 className="text-xl font-bold text-green-900 mb-2">Great Job!</h3>
+                  <p className="text-green-700 mb-4">
+                    You've studied all {totalCards} flashcards. You got {correctCount} correct on first try.
+                  </p>
+                  <div className="flex justify-center space-x-3">
+                    <Button onClick={handleRestart}>
+                      Study Again
+                    </Button>
+                    <Link to="/practice">
+                      <Button variant="outline">
+                        Take Practice Quiz
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : null}
+
+            {/* Flashcard - always show if we have cards */}
             {currentFlashcard && (
               <div className="flex justify-center mb-6">
                 <div className="relative w-full max-w-2xl h-80">
@@ -259,8 +310,8 @@ const Flashcards = () => {
               </div>
             )}
 
-            {/* Action Buttons */}
-            {isFlipped && (
+            {/* Action Buttons - only show if card is flipped and not completed */}
+            {isFlipped && !showCompletion && !allCardsStudied && (
               <div className="flex justify-center space-x-4 mb-6">
                 <Button 
                   onClick={() => handleAnswer(false)}
@@ -280,7 +331,7 @@ const Flashcards = () => {
               </div>
             )}
 
-            {/* Navigation */}
+            {/* Navigation - always show */}
             <div className="flex justify-between items-center">
               <Button 
                 onClick={handlePrevCard}
@@ -308,29 +359,6 @@ const Flashcards = () => {
                 Next Card
               </Button>
             </div>
-
-            {/* Completion Message */}
-            {studiedCards.filter(Boolean).length === totalCards && totalCards > 0 && (
-              <Card className="mt-6 bg-green-50/70 backdrop-blur border-green-200">
-                <CardContent className="p-6 text-center">
-                  <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-3" />
-                  <h3 className="text-xl font-bold text-green-900 mb-2">Great Job!</h3>
-                  <p className="text-green-700 mb-4">
-                    You've studied all {totalCards} flashcards. You got {correctCount} correct on first try.
-                  </p>
-                  <div className="flex justify-center space-x-3">
-                    <Button onClick={handleRestart}>
-                      Study Again
-                    </Button>
-                    <Link to="/practice">
-                      <Button variant="outline">
-                        Take Practice Quiz
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
           </div>
         )}
       </div>
