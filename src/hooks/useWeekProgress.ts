@@ -1,0 +1,93 @@
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+
+export interface WeekProgress {
+  id: string;
+  user_id: string;
+  current_week: number;
+  completed_weeks: number[];
+  created_at: string;
+  updated_at: string;
+}
+
+export const useWeekProgress = () => {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: ['week-progress', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      
+      const { data, error } = await supabase
+        .from('user_week_progress')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching week progress:', error);
+        throw error;
+      }
+      
+      // If no progress exists, create initial record
+      if (!data) {
+        const { data: newProgress, error: createError } = await supabase
+          .from('user_week_progress')
+          .insert({
+            user_id: user.id,
+            current_week: 1,
+            completed_weeks: []
+          })
+          .select()
+          .single();
+        
+        if (createError) {
+          console.error('Error creating week progress:', createError);
+          throw createError;
+        }
+        
+        return newProgress as WeekProgress;
+      }
+      
+      return data as WeekProgress;
+    },
+    enabled: !!user,
+  });
+};
+
+export const useAdvanceWeek = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (weekToComplete: number) => {
+      if (!user) throw new Error('User not authenticated');
+      
+      const { data, error } = await supabase
+        .from('user_week_progress')
+        .update({
+          current_week: weekToComplete + 1,
+          completed_weeks: supabase.rpc('array_append', {
+            array_col: 'completed_weeks',
+            new_element: weekToComplete
+          }),
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error advancing week:', error);
+        throw error;
+      }
+      
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['week-progress'] });
+    },
+  });
+};

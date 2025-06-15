@@ -1,4 +1,3 @@
-
 import { Monitor, BookOpen, Target, TrendingUp, Brain, Users, Clock, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +8,9 @@ import { UserMenu } from '@/components/UserMenu';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserQuizAttempts } from '@/hooks/useQuizAttempts';
 import { usePracticeQuestions } from '@/hooks/usePracticeQuestions';
+import { useWeekProgress } from '@/hooks/useWeekProgress';
+import { WeekSelector } from '@/components/WeekSelector';
+import { useState } from 'react';
 
 // Week structure for CompTIA A+ course
 const courseWeeks = [
@@ -30,6 +32,8 @@ export default function Index() {
   const { user } = useAuth();
   const { data: quizAttempts = [] } = useUserQuizAttempts();
   const { data: allQuestions = [] } = usePracticeQuestions();
+  const { data: weekProgress } = useWeekProgress();
+  const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
 
   // Calculate real progress data
   const totalQuestions = allQuestions.length;
@@ -38,24 +42,13 @@ export default function Index() {
   const avgScore = questionsAnswered > 0 ? Math.round((totalCorrect / questionsAnswered) * 100) : 0;
   const practiceProgress = totalQuestions > 0 ? Math.min((questionsAnswered / totalQuestions) * 100, 100) : 0;
   
-  // Calculate current week based on progress (more realistic progression)
-  const calculateCurrentWeek = () => {
-    if (questionsAnswered === 0) return 1; // Start at week 1 if no questions answered
-    
-    // Each week requires approximately 15-20 questions to be considered "complete"
-    // This gives a more gradual progression through the 12-week course
-    const questionsPerWeek = Math.max(Math.ceil(totalQuestions / 12), 15);
-    const weekBasedOnQuestions = Math.ceil(questionsAnswered / questionsPerWeek);
-    
-    // Cap at week 12 and ensure minimum of week 1
-    return Math.min(Math.max(weekBasedOnQuestions, 1), 12);
-  };
-
-  const currentWeek = calculateCurrentWeek();
+  // Use week progression system instead of automatic calculation
+  const currentWeek = selectedWeek || weekProgress?.current_week || 1;
   const currentWeekInfo = courseWeeks[currentWeek - 1];
   
-  // Calculate overall course progress (based on current week)
-  const weeklyProgress = ((currentWeek - 1) / 11) * 100; // 11 intervals between 12 weeks
+  // Calculate overall course progress based on completed weeks
+  const completedWeeks = weekProgress?.completed_weeks?.length || 0;
+  const weeklyProgress = (completedWeeks / 12) * 100;
   
   // Calculate study streak and assignments (based on quiz attempts)
   const uniqueDaysStudied = new Set(
@@ -135,6 +128,13 @@ export default function Index() {
             Continue your CompTIA A+ certification journey. You're doing great!
           </p>
         </div>
+
+        {/* Week Selector */}
+        <WeekSelector 
+          courseWeeks={courseWeeks}
+          currentWeek={currentWeek}
+          onWeekChange={setSelectedWeek}
+        />
 
         {/* Progress Overview */}
         <Card className="mb-8">
