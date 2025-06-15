@@ -56,6 +56,244 @@ const Practice = () => {
       explanation: "SATA drives use a 15-pin SATA power connector that provides 3.3V, 5V, and 12V power rails. This is different from the older 4-pin Molex connectors.",
       domain: "Hardware",
       difficulty: "Medium"
+    },
+    {
+      id: 4,
+      question: "What is the purpose of the BIOS/UEFI in a computer system?",
+      options: [
+        "To provide internet connectivity",
+        "To manage file storage",
+        "To initialize hardware and boot the operating system",
+        "To run application software"
+      ],
+      correctAnswer: 2,
+      explanation: "BIOS (Basic Input/Output System) or UEFI (Unified Extensible Firmware Interface) is firmware that initializes hardware components during startup and provides the bootloader with information needed to boot the operating system.",
+      domain: "Hardware",
+      difficulty: "Easy"
+    },
+    {
+      id: 5,
+      question: "Which type of memory is considered non-volatile?",
+      options: [
+        "RAM",
+        "Cache memory",
+        "SSD storage",
+        "System memory"
+      ],
+      correctAnswer: 2,
+      explanation: "Non-volatile memory retains its contents even when power is removed. SSDs, hard drives, and flash memory are examples of non-volatile storage, while RAM is volatile.",
+      domain: "Hardware",
+      difficulty: "Easy"
+    },
+    {
+      id: 6,
+      question: "What is the maximum theoretical transfer rate of USB 3.0?",
+      options: [
+        "480 Mbps",
+        "5 Gbps",
+        "10 Gbps",
+        "20 Gbps"
+      ],
+      correctAnswer: 1,
+      explanation: "USB 3.0 (also known as USB 3.1 Gen 1) has a maximum theoretical transfer rate of 5 Gbps (gigabits per second), which is significantly faster than USB 2.0's 480 Mbps.",
+      domain: "Hardware",
+      difficulty: "Medium"
+    },
+    {
+      id: 7,
+      question: "Which CPU socket type is commonly used for Intel's 12th generation processors?",
+      options: [
+        "LGA 1151",
+        "LGA 1200",
+        "LGA 1700",
+        "LGA 2066"
+      ],
+      correctAnswer: 2,
+      explanation: "LGA 1700 is the socket used for Intel's 12th generation Alder Lake processors. Each generation of processors typically requires a specific socket type.",
+      domain: "Hardware",
+      difficulty: "Hard"
+    },
+    {
+      id: 8,
+      question: "What is the primary function of a graphics card's VRAM?",
+      options: [
+        "Store the operating system",
+        "Store textures, frame buffers, and graphics data",
+        "Process CPU instructions",
+        "Manage network connections"
+      ],
+      correctAnswer: 1,
+      explanation: "VRAM (Video RAM) is dedicated memory on a graphics card used to store textures, frame buffers, and other graphics-related data for quick access by the GPU.",
+      domain: "Hardware",
+      difficulty: "Medium"
+    },
+    {
+      id: 9,
+      question: "Which power connector is typically used for modern graphics cards?",
+      options: [
+        "4-pin Molex",
+        "SATA power",
+        "6-pin or 8-pin PCIe",
+        "24-pin ATX"
+      ],
+      correctAnswer: 2,
+      explanation: "Modern graphics cards typically use 6-pin, 8-pin, or combinations of PCIe power connectors to provide the additional power they need beyond what the PCIe slot can supply.",
+      domain: "Hardware",
+      difficulty: "Medium"
+    },
+    {
+      id: 10,
+      question: "What does POST stand for in computer terminology?",
+      options: [
+        "Power On Self Test",
+        "Processor Operating System Test",
+        "Primary Output System Test",
+        "Peripheral Operating Status Test"
+      ],
+      correctAnswer: 0,
+      explanation: "POST (Power On Self Test) is a diagnostic testing sequence that a computer runs when it's first powered on to check that hardware components are functioning properly.",
+      domain: "Hardware",
+      difficulty: "Easy"
+    },
+    {
+      id: 11,
+      question: "Which interface is fastest for connecting storage devices?",
+      options: [
+        "SATA III",
+        "USB 3.0",
+        "NVMe",
+        "IDE"
+      ],
+      correctAnswer: 2,
+      explanation: "NVMe (Non-Volatile Memory Express) is the fastest interface for storage devices, capable of much higher speeds than SATA III, especially when used with PCIe 3.0 or 4.0 slots.",
+      domain: "Hardware",
+      difficulty: "Medium"
+    },
+    {
+      id: 12,
+      question: "What is the purpose of thermal paste on a CPU?",
+      options: [
+        "To insulate the CPU from electrical damage",
+        "To improve heat transfer between CPU and cooler",
+        "To prevent dust accumulation",
+        "To secure the CPU to the motherboard"
+      ],
+      correctAnswer: 1,
+      explanation: "Thermal paste (or thermal compound) fills microscopic gaps between the CPU and cooler, improving heat transfer efficiency by eliminating air pockets that would otherwise insulate.",
+      domain: "Hardware",
+      difficulty: "Easy"
+    },
+    {
+      id: 13,
+      question: "Which component determines the maximum RAM capacity of a system?",
+      options: [
+        "CPU",
+        "Power Supply",
+        "Motherboard chipset",
+        "Graphics Card"
+      ],
+      correctAnswer: 2,
+      explanation: "The motherboard chipset determines the maximum RAM capacity, number of memory slots, and supported memory types. The CPU also plays a role but the chipset is the primary limiting factor.",
+      domain: "Hardware",
+      difficulty: "Medium"
+    },
+    {
+      id: 14,
+      question: "What is the difference between DDR4 and DDR5 RAM?",
+      options: [
+        "DDR5 operates at lower voltages and higher speeds",
+        "DDR4 is faster than DDR5",
+        "DDR5 uses more power than DDR4",
+        "There is no significant difference"
+      ],
+      correctAnswer: 0,
+      explanation: "DDR5 RAM operates at lower voltages (1.1V vs 1.2V) and achieves higher speeds than DDR4, while also offering improved power efficiency and higher capacity modules.",
+      domain: "Hardware",
+      difficulty: "Hard"
+    },
+    {
+      id: 15,
+      question: "Which expansion slot type is primarily used for graphics cards?",
+      options: [
+        "PCI",
+        "PCIe x1",
+        "PCIe x16",
+        "AGP"
+      ],
+      correctAnswer: 2,
+      explanation: "PCIe x16 slots are primarily designed for graphics cards as they provide the highest bandwidth (16 lanes) needed for high-performance graphics processing.",
+      domain: "Hardware",
+      difficulty: "Easy"
+    },
+    {
+      id: 16,
+      question: "What is the purpose of ECC memory?",
+      options: [
+        "To increase memory speed",
+        "To detect and correct memory errors",
+        "To reduce power consumption",
+        "To improve graphics performance"
+      ],
+      correctAnswer: 1,
+      explanation: "ECC (Error-Correcting Code) memory can detect and automatically correct single-bit memory errors, making it important for servers and workstations where data integrity is critical.",
+      domain: "Hardware",
+      difficulty: "Hard"
+    },
+    {
+      id: 17,
+      question: "Which component converts AC power to DC power in a computer?",
+      options: [
+        "Motherboard",
+        "Power Supply Unit (PSU)",
+        "CPU",
+        "RAM"
+      ],
+      correctAnswer: 1,
+      explanation: "The Power Supply Unit (PSU) converts alternating current (AC) from the wall outlet to direct current (DC) at various voltages (3.3V, 5V, 12V) that computer components require.",
+      domain: "Hardware",
+      difficulty: "Easy"
+    },
+    {
+      id: 18,
+      question: "What is the typical lifespan of an SSD compared to an HDD?",
+      options: [
+        "SSDs last much shorter than HDDs",
+        "SSDs and HDDs have similar lifespans",
+        "SSDs typically last longer than HDDs",
+        "Lifespan depends only on usage patterns"
+      ],
+      correctAnswer: 2,
+      explanation: "SSDs typically last longer than HDDs because they have no moving parts, making them less susceptible to mechanical failure. However, they do have limited write cycles.",
+      domain: "Hardware",
+      difficulty: "Medium"
+    },
+    {
+      id: 19,
+      question: "Which cooling method is most effective for high-performance CPUs?",
+      options: [
+        "Stock air cooler",
+        "Liquid cooling (AIO)",
+        "Passive cooling",
+        "Case fans only"
+      ],
+      correctAnswer: 1,
+      explanation: "Liquid cooling systems (All-In-One or custom loops) are generally most effective for high-performance CPUs as they can dissipate heat more efficiently than air coolers.",
+      domain: "Hardware",
+      difficulty: "Medium"
+    },
+    {
+      id: 20,
+      question: "What does TDP stand for in CPU specifications?",
+      options: [
+        "Total Data Processing",
+        "Thermal Design Power",
+        "Turbo Dynamic Performance",
+        "Temperature Detection Point"
+      ],
+      correctAnswer: 1,
+      explanation: "TDP (Thermal Design Power) represents the maximum amount of heat a CPU is designed to generate under normal operation, measured in watts. It helps determine cooling requirements.",
+      domain: "Hardware",
+      difficulty: "Medium"
     }
   ];
 
