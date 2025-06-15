@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Clock, BookOpen } from "lucide-react";
 import { QuizTopic } from "@/hooks/usePracticeQuestions";
@@ -64,6 +65,7 @@ const TopicCard = ({
   const { data: allQuestions = [] } = usePracticeQuestions(topic.id);
   const weekQuestions = allQuestions.filter(q => q.week_number === currentWeek);
   
+  // Get the most recent attempt for this topic (regardless of week for now)
   const recentAttempt = attempts
     .filter(attempt => attempt.topic_id === topic.id)
     .sort((a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime())[0];
@@ -114,7 +116,7 @@ const TopicCard = ({
       <CardContent>
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-600">Questions Available:</span>
+            <span className="text-sm text-gray-600">Week {currentWeek} Questions:</span>
             <span className="font-medium">{weekQuestions.length}</span>
           </div>
           <div className="flex justify-between items-center">
