@@ -3,10 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, Lock, Clock } from "lucide-react";
+import { CheckCircle, Lock, Clock, RotateCcw } from "lucide-react";
 import { useWeekProgress, useAdvanceWeek } from "@/hooks/useWeekProgress";
 import { useUserQuizAttempts } from "@/hooks/useQuizAttempts";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface WeekSelectorProps {
   courseWeeks: Array<{
@@ -23,6 +26,36 @@ export const WeekSelector = ({ courseWeeks, currentWeek, onWeekChange }: WeekSel
   const { data: quizAttempts = [] } = useUserQuizAttempts();
   const advanceWeek = useAdvanceWeek();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  // Reset week progress mutation
+  const resetToWeek = useMutation({
+    mutationFn: async (targetWeek: number) => {
+      if (!user) throw new Error('User not authenticated');
+      
+      const { data, error } = await supabase
+        .from('user_week_progress')
+        .update({
+          current_week: targetWeek,
+          completed_weeks: targetWeek > 1 ? Array.from({length: targetWeek - 1}, (_, i) => i + 1) : [],
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error resetting week:', error);
+        throw error;
+      }
+      
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['week-progress'] });
+    },
+  });
 
   // Check if a week is completed based on quiz attempts
   const isWeekCompleted = (weekNumber: number) => {
@@ -30,10 +63,10 @@ export const WeekSelector = ({ courseWeeks, currentWeek, onWeekChange }: WeekSel
     return weekProgress.completed_weeks.includes(weekNumber);
   };
 
-  // Check if user can access a week
+  // Check if user can access a week - allow access to completed weeks and current week
   const canAccessWeek = (weekNumber: number) => {
     if (!weekProgress) return weekNumber === 1;
-    return weekNumber <= weekProgress.current_week;
+    return weekNumber <= weekProgress.current_week || isWeekCompleted(weekNumber);
   };
 
   // Check if current week objectives are completed
@@ -75,13 +108,72 @@ export const WeekSelector = ({ courseWeeks, currentWeek, onWeekChange }: WeekSel
     }
   };
 
+  const handleWeekSelect = async (weekNumber: number) => {
+    if (!canAccessWeek(weekNumber)) return;
+    
+    const isComingSoon = courseWeeks[weekNumber - 1]?.title === "Coming Soon";
+    if (isComingSoon) return;
+
+    // If selecting a different week than current, update progress
+    if (weekNumber !== currentWeek) {
+      try {
+        await resetToWeek.mutateAsync(weekNumber);
+        toast({
+          title: "Week changed",
+          description: `Switched to Week ${weekNumber}`,
+        });
+        onWeekChange(weekNumber);
+      } catch (error) {
+        console.error('Error changing week:', error);
+        toast({
+          title: "Error",
+          description: "Failed to change week",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const handleResetToWeekOne = async () => {
+    try {
+      await resetToWeek.mutateAsync(1);
+      toast({
+        title: "Progress reset",
+        description: "Reset back to Week 1",
+      });
+      onWeekChange(1);
+    } catch (error) {
+      console.error('Error resetting to week 1:', error);
+      toast({
+        title: "Error",
+        description: "Failed to reset progress",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Card className="mb-6">
       <CardHeader>
-        <CardTitle>Course Progress</CardTitle>
-        <CardDescription>
-          Complete each week's objectives to unlock the next week
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Course Progress</CardTitle>
+            <CardDescription>
+              Complete each week's objectives to unlock the next week
+            </CardDescription>
+          </div>
+          {currentWeek > 1 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleResetToWeekOne}
+              disabled={resetToWeek.isPending}
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Reset to Week 1
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
@@ -94,8 +186,8 @@ export const WeekSelector = ({ courseWeeks, currentWeek, onWeekChange }: WeekSel
             return (
               <button
                 key={week.number}
-                onClick={() => accessible && !isComingSoon ? onWeekChange(week.number) : null}
-                disabled={!accessible || isComingSoon}
+                onClick={() => handleWeekSelect(week.number)}
+                disabled={!accessible || isComingSoon || resetToWeek.isPending}
                 className={`p-3 rounded-lg border-2 text-left transition-all ${
                   isCurrent && !isComingSoon
                     ? 'border-blue-500 bg-blue-50 text-blue-900'
