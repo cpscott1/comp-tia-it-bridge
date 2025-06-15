@@ -7,12 +7,29 @@ import { Progress } from '@/components/ui/progress';
 import { Link } from 'react-router-dom';
 import { UserMenu } from '@/components/UserMenu';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserQuizAttempts } from '@/hooks/useQuizAttempts';
+import { usePracticeQuestions } from '@/hooks/usePracticeQuestions';
 
 export default function Index() {
   const { user } = useAuth();
+  const { data: quizAttempts = [] } = useUserQuizAttempts();
+  const { data: allQuestions = [] } = usePracticeQuestions();
 
-  const weeklyProgress = 25; // This would come from your progress tracking system
-  const currentWeek = 2; // This would be calculated based on course start date
+  // Calculate real progress data
+  const totalQuestions = allQuestions.length;
+  const questionsAnswered = quizAttempts.reduce((sum, attempt) => sum + attempt.total_questions, 0);
+  const totalCorrect = quizAttempts.reduce((sum, attempt) => sum + attempt.score, 0);
+  const avgScore = questionsAnswered > 0 ? Math.round((totalCorrect / questionsAnswered) * 100) : 0;
+  const practiceProgress = totalQuestions > 0 ? Math.min((questionsAnswered / totalQuestions) * 100, 100) : 0;
+  
+  // Calculate overall course progress (based on questions attempted)
+  const weeklyProgress = Math.min(practiceProgress * 0.25, 25); // Cap at 25% for weeks 1-2
+  const currentWeek = 2;
+
+  // Calculate study streak and assignments (based on quiz attempts)
+  const uniqueDaysStudied = new Set(
+    quizAttempts.map(attempt => new Date(attempt.completed_at).toDateString())
+  ).size;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -65,26 +82,26 @@ export default function Index() {
               <div>
                 <div className="flex justify-between text-sm text-gray-600 mb-2">
                   <span>Overall Course Progress</span>
-                  <span>{weeklyProgress}% Complete</span>
+                  <span>{Math.round(weeklyProgress)}% Complete</span>
                 </div>
                 <Progress value={weeklyProgress} className="h-2" />
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">2</div>
+                  <div className="text-2xl font-bold text-blue-600">{currentWeek}</div>
                   <div className="text-sm text-gray-600">Current Week</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">85%</div>
+                  <div className="text-2xl font-bold text-green-600">{avgScore}%</div>
                   <div className="text-sm text-gray-600">Avg. Score</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-600">12</div>
-                  <div className="text-sm text-gray-600">Assignments Done</div>
+                  <div className="text-2xl font-bold text-purple-600">{quizAttempts.length}</div>
+                  <div className="text-sm text-gray-600">Quiz Attempts</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-orange-600">4</div>
-                  <div className="text-sm text-gray-600">Days This Week</div>
+                  <div className="text-2xl font-bold text-orange-600">{uniqueDaysStudied}</div>
+                  <div className="text-sm text-gray-600">Days Studied</div>
                 </div>
               </div>
             </div>
@@ -107,9 +124,9 @@ export default function Index() {
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span>Questions Completed</span>
-                  <span className="font-medium">47/100</span>
+                  <span className="font-medium">{questionsAnswered}/{totalQuestions}</span>
                 </div>
-                <Progress value={47} className="h-2" />
+                <Progress value={practiceProgress} className="h-2" />
                 <Link to="/practice">
                   <Button className="w-full">
                     Continue Practice
@@ -132,10 +149,10 @@ export default function Index() {
             <CardContent>
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span>Cards Mastered</span>
-                  <span className="font-medium">23/50</span>
+                  <span>Cards Available</span>
+                  <span className="font-medium">{totalQuestions}</span>
                 </div>
-                <Progress value={46} className="h-2" />
+                <Progress value={Math.min((questionsAnswered / Math.max(totalQuestions, 1)) * 100, 100)} className="h-2" />
                 <Link to="/flashcards">
                   <Button className="w-full" variant="outline">
                     Study Flashcards
@@ -160,11 +177,11 @@ export default function Index() {
                 <div className="text-sm text-gray-600">
                   <div className="flex items-center space-x-2 mb-2">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span>3 new messages</span>
+                    <span>Coming Soon</span>
                   </div>
-                  <div className="text-xs">Latest: "RAM troubleshooting tips"</div>
+                  <div className="text-xs">Forum functionality in development</div>
                 </div>
-                <Button className="w-full" variant="outline">
+                <Button className="w-full" variant="outline" disabled>
                   Join Discussion
                 </Button>
               </div>
@@ -209,16 +226,22 @@ export default function Index() {
               <div>
                 <h4 className="font-semibold mb-3">Recommended Actions</h4>
                 <div className="space-y-2">
-                  <Button variant="outline" size="sm" className="w-full justify-start">
-                    📚 Review CPU Socket Types
-                  </Button>
-                  <Button variant="outline" size="sm" className="w-full justify-start">
-                    🧠 Practice RAM Identification
-                  </Button>
-                  <Button variant="outline" size="sm" className="w-full justify-start">
-                    🎯 Take Hardware Assessment
-                  </Button>
-                  <Button variant="outline" size="sm" className="w-full justify-start">
+                  <Link to="/practice">
+                    <Button variant="outline" size="sm" className="w-full justify-start">
+                      📚 Practice Hardware Questions
+                    </Button>
+                  </Link>
+                  <Link to="/flashcards">
+                    <Button variant="outline" size="sm" className="w-full justify-start">
+                      🧠 Study Component Flashcards
+                    </Button>
+                  </Link>
+                  <Link to="/practice">
+                    <Button variant="outline" size="sm" className="w-full justify-start">
+                      🎯 Take Troubleshooting Quiz
+                    </Button>
+                  </Link>
+                  <Button variant="outline" size="sm" className="w-full justify-start" disabled>
                     💬 Ask Questions in Discussion
                   </Button>
                 </div>
