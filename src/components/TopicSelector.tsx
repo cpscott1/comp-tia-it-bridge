@@ -17,6 +17,10 @@ export const TopicSelector = ({ topics, onTopicSelect, loading }: TopicSelectorP
   const currentWeek = weekProgress?.current_week || 1;
   const { data: attempts = [] } = useUserQuizAttempts();
 
+  console.log("TopicSelector - Current week:", currentWeek);
+  console.log("TopicSelector - Week progress:", weekProgress);
+  console.log("TopicSelector - Available topics:", topics);
+
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -64,6 +68,10 @@ const TopicCard = ({
   // Get questions for this topic and current week only
   const { data: allQuestions = [] } = usePracticeQuestions(topic.id);
   const weekQuestions = allQuestions.filter(q => q.week_number === currentWeek);
+  
+  console.log(`TopicCard ${topic.name} - All questions:`, allQuestions.length);
+  console.log(`TopicCard ${topic.name} - Week ${currentWeek} questions:`, weekQuestions.length);
+  console.log(`TopicCard ${topic.name} - Week questions details:`, weekQuestions.map(q => ({ id: q.id, week: q.week_number })));
   
   // Get the most recent attempt for this topic AND current week specifically
   const recentAttempt = attempts

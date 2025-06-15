@@ -76,6 +76,10 @@ const Practice = () => {
   const [selectedTopic, setSelectedTopic] = useState<QuizTopic | null>(null);
   const { data: topics = [], isLoading } = useQuizTopics(currentWeek);
 
+  console.log("Practice page - Current week:", currentWeek);
+  console.log("Practice page - Week progress:", weekProgress);
+  console.log("Practice page - Topics for current week:", topics);
+
   const handleTopicSelect = (topic: QuizTopic) => {
     console.log("Selected topic:", topic);
     setSelectedTopic(topic);
@@ -115,6 +119,11 @@ const Practice = () => {
           <p className="text-gray-600 mb-4">
             {COURSE_WEEKS[currentWeek - 1]?.description}
           </p>
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <p className="text-sm text-blue-800">
+              Debug info - Current week: {currentWeek}, Topics found: {topics.length}
+            </p>
+          </div>
         </div>
 
         <TopicSelector
