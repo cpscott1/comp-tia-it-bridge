@@ -10,6 +10,22 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserQuizAttempts } from '@/hooks/useQuizAttempts';
 import { usePracticeQuestions } from '@/hooks/usePracticeQuestions';
 
+// Week structure for CompTIA A+ course
+const courseWeeks = [
+  { number: 1, title: "Hardware Foundations & Basic Components", description: "CPU, RAM, motherboard identification and troubleshooting basics" },
+  { number: 2, title: "Advanced Hardware & Installation", description: "Memory, storage, power supplies, and cooling systems" },
+  { number: 3, title: "Mobile Devices & Networking", description: "Laptops, tablets, smartphones, and basic networking concepts" },
+  { number: 4, title: "Network Troubleshooting", description: "TCP/IP, wireless networks, and network troubleshooting" },
+  { number: 5, title: "Operating Systems Fundamentals", description: "Windows, macOS, Linux basics and file systems" },
+  { number: 6, title: "OS Installation & Configuration", description: "OS installation, updates, and system configuration" },
+  { number: 7, title: "Security Fundamentals", description: "Physical security, authentication, and basic security concepts" },
+  { number: 8, title: "Operational Procedures", description: "Safety procedures, environmental controls, and documentation" },
+  { number: 9, title: "Cloud Computing & Virtualization", description: "Cloud services, virtual machines, and remote access" },
+  { number: 10, title: "Printers & Peripherals", description: "Printer types, installation, and troubleshooting" },
+  { number: 11, title: "Exam Preparation", description: "Practice exams, review sessions, and test-taking strategies" },
+  { number: 12, title: "Final Review & Certification", description: "Comprehensive review and certification exam preparation" }
+];
+
 export default function Index() {
   const { user } = useAuth();
   const { data: quizAttempts = [] } = useUserQuizAttempts();
@@ -22,14 +38,51 @@ export default function Index() {
   const avgScore = questionsAnswered > 0 ? Math.round((totalCorrect / questionsAnswered) * 100) : 0;
   const practiceProgress = totalQuestions > 0 ? Math.min((questionsAnswered / totalQuestions) * 100, 100) : 0;
   
-  // Calculate overall course progress (based on questions attempted)
-  const weeklyProgress = Math.min(practiceProgress * 0.25, 25); // Cap at 25% for weeks 1-2
-  const currentWeek = 2;
+  // Calculate current week based on progress (each week represents ~8.33% of total progress)
+  const calculateCurrentWeek = () => {
+    if (practiceProgress === 0) return 1; // Start at week 1 if no progress
+    const progressBasedWeek = Math.min(Math.ceil(practiceProgress / 8.33), 12);
+    return Math.max(progressBasedWeek, 1);
+  };
 
+  const currentWeek = calculateCurrentWeek();
+  const currentWeekInfo = courseWeeks[currentWeek - 1];
+  
+  // Calculate overall course progress (based on questions attempted)
+  const weeklyProgress = Math.min(practiceProgress * 0.25, 25); // Cap based on current implementation
+  
   // Calculate study streak and assignments (based on quiz attempts)
   const uniqueDaysStudied = new Set(
     quizAttempts.map(attempt => new Date(attempt.completed_at).toDateString())
   ).size;
+
+  // Generate week objectives based on current week
+  const getWeekObjectives = (week: number) => {
+    const objectives = {
+      1: [
+        { completed: true, text: "Identify CPU types and sockets" },
+        { completed: true, text: "Understand RAM specifications" },
+        { completed: practiceProgress > 20, text: "Storage device interfaces" },
+        { completed: practiceProgress > 30, text: "Power supply basics" }
+      ],
+      2: [
+        { completed: practiceProgress > 25, text: "Advanced CPU architectures" },
+        { completed: practiceProgress > 35, text: "Memory channel configurations" },
+        { completed: practiceProgress > 45, text: "NVMe and storage optimization" },
+        { completed: practiceProgress > 55, text: "Cooling system design" }
+      ],
+      // Add more weeks as needed
+    };
+    
+    return objectives[week] || [
+      { completed: false, text: "Week content coming soon" },
+      { completed: false, text: "Additional topics in development" },
+      { completed: false, text: "Practice materials being prepared" },
+      { completed: false, text: "Assessment tools under construction" }
+    ];
+  };
+
+  const weekObjectives = getWeekObjectives(currentWeek);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -43,7 +96,7 @@ export default function Index() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-900">CompTIA A+ Platform</h1>
-              <p className="text-sm text-gray-600">Week {currentWeek}: Hardware Foundations</p>
+              <p className="text-sm text-gray-600">Week {currentWeek}: {currentWeekInfo.title}</p>
             </div>
           </div>
           <div className="flex items-center space-x-4">
@@ -194,10 +247,10 @@ export default function Index() {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Clock className="h-5 w-5" />
-              <span>This Week: Hardware Foundations</span>
+              <span>This Week: {currentWeekInfo.title}</span>
             </CardTitle>
             <CardDescription>
-              Week 2 of 12 - Focus on component identification and basic troubleshooting
+              Week {currentWeek} of 12 - {currentWeekInfo.description}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -205,22 +258,18 @@ export default function Index() {
               <div>
                 <h4 className="font-semibold mb-3">Learning Objectives</h4>
                 <ul className="space-y-2">
-                  <li className="flex items-center space-x-2">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <span className="text-sm">Identify CPU types and sockets</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <span className="text-sm">Understand RAM specifications</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <Clock className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm text-gray-600">Storage device interfaces</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <Clock className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm text-gray-600">Power supply basics</span>
-                  </li>
+                  {weekObjectives.map((objective, index) => (
+                    <li key={index} className="flex items-center space-x-2">
+                      {objective.completed ? (
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <Clock className="h-4 w-4 text-gray-400" />
+                      )}
+                      <span className={`text-sm ${objective.completed ? 'text-gray-900' : 'text-gray-600'}`}>
+                        {objective.text}
+                      </span>
+                    </li>
+                  ))}
                 </ul>
               </div>
               <div>
@@ -228,7 +277,7 @@ export default function Index() {
                 <div className="space-y-2">
                   <Link to="/practice">
                     <Button variant="outline" size="sm" className="w-full justify-start">
-                      📚 Practice Hardware Questions
+                      📚 Practice {currentWeekInfo.title} Questions
                     </Button>
                   </Link>
                   <Link to="/flashcards">
@@ -238,7 +287,7 @@ export default function Index() {
                   </Link>
                   <Link to="/practice">
                     <Button variant="outline" size="sm" className="w-full justify-start">
-                      🎯 Take Troubleshooting Quiz
+                      🎯 Take Week {currentWeek} Quiz
                     </Button>
                   </Link>
                   <Button variant="outline" size="sm" className="w-full justify-start" disabled>
