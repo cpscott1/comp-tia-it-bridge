@@ -20,6 +20,7 @@ export type Database = {
           question: string
           topic_id: string
           updated_at: string
+          week_number: number | null
         }
         Insert: {
           correct_answer: number
@@ -31,6 +32,7 @@ export type Database = {
           question: string
           topic_id: string
           updated_at?: string
+          week_number?: number | null
         }
         Update: {
           correct_answer?: number
@@ -42,6 +44,7 @@ export type Database = {
           question?: string
           topic_id?: string
           updated_at?: string
+          week_number?: number | null
         }
         Relationships: [
           {

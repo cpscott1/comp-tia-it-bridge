@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, CheckCircle, XCircle, RotateCcw, Target, BookOpen } from "lucide-react";
+import { ArrowLeft, CheckCircle, XCircle, RotateCcw, Target, BookOpen, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 import { usePracticeQuestions, useQuizTopics, QuizTopic, PracticeQuestion } from "@/hooks/usePracticeQuestions";
 import { useSaveQuizAttempt } from "@/hooks/useQuizAttempts";
+import { useWeekProgress } from "@/hooks/useWeekProgress";
 import { TopicSelector } from "@/components/TopicSelector";
 import { useToast } from "@/hooks/use-toast";
 
@@ -20,8 +21,11 @@ const Practice = () => {
   const [answeredQuestions, setAnsweredQuestions] = useState<boolean[]>([]);
 
   const { toast } = useToast();
-  const { data: topics = [], isLoading: topicsLoading } = useQuizTopics();
-  const { data: questions = [], isLoading: questionsLoading } = usePracticeQuestions(selectedTopic?.id);
+  const { data: weekProgress } = useWeekProgress();
+  const currentWeek = weekProgress?.current_week || 1;
+  
+  const { data: topics = [], isLoading: topicsLoading } = useQuizTopics(currentWeek);
+  const { data: questions = [], isLoading: questionsLoading } = usePracticeQuestions(selectedTopic?.id, currentWeek);
   const saveQuizAttempt = useSaveQuizAttempt();
 
   const currentQ = questions[currentQuestion];
@@ -132,13 +136,17 @@ const Practice = () => {
                 </Link>
               )}
               <div>
-                <h1 className="text-xl font-bold text-gray-900">
+                <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                   {selectedTopic ? selectedTopic.name : "Practice Quizzes"}
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                    <Calendar className="h-3 w-3 mr-1" />
+                    Week {currentWeek}
+                  </Badge>
                 </h1>
                 <p className="text-sm text-gray-500">
                   {selectedTopic 
                     ? selectedTopic.description 
-                    : "Choose a topic to start practicing"
+                    : `CompTIA A+ Week ${currentWeek} practice questions`
                   }
                 </p>
               </div>
@@ -158,8 +166,8 @@ const Practice = () => {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-8">
               <BookOpen className="h-16 w-16 text-blue-600 mx-auto mb-4" />
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Choose Your Practice Topic</h2>
-              <p className="text-gray-600">Select a topic to start practicing with dynamic questions</p>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Week {currentWeek} Practice Topics</h2>
+              <p className="text-gray-600">Select a topic to start practicing Week {currentWeek} questions</p>
             </div>
             <TopicSelector 
               topics={topics} 
@@ -192,7 +200,7 @@ const Practice = () => {
                 <Target className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">No Questions Available</h3>
                 <p className="text-gray-600 mb-4">
-                  There are currently no practice questions for this topic.
+                  There are currently no practice questions for Week {currentWeek} in this topic.
                 </p>
                 <Button onClick={handleBackToTopics}>
                   Choose Another Topic
@@ -207,7 +215,7 @@ const Practice = () => {
             <Card className="mb-6 bg-white/70 backdrop-blur">
               <CardContent className="p-6">
                 <div className="flex justify-between text-sm text-gray-600 mb-2">
-                  <span>Practice Progress</span>
+                  <span>Week {currentWeek} Practice Progress</span>
                   <span>{Math.round(progress)}% Complete</span>
                 </div>
                 <Progress value={progress} className="h-3" />
@@ -234,7 +242,10 @@ const Practice = () => {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <Badge variant="secondary">{selectedTopic.name}</Badge>
-                    <Badge variant="outline">{currentQ.difficulty}</Badge>
+                    <div className="flex gap-2">
+                      <Badge variant="outline">Week {currentWeek}</Badge>
+                      <Badge variant="outline">{currentQ.difficulty}</Badge>
+                    </div>
                   </div>
                   <CardTitle className="text-lg leading-relaxed">
                     {currentQ.question}
@@ -308,7 +319,7 @@ const Practice = () => {
             <Card className="bg-white/70 backdrop-blur">
               <CardHeader>
                 <Target className="h-16 w-16 text-green-600 mx-auto mb-4" />
-                <CardTitle className="text-2xl">Practice Session Complete!</CardTitle>
+                <CardTitle className="text-2xl">Week {currentWeek} Practice Complete!</CardTitle>
                 <CardDescription>Great work on completing {selectedTopic.name}</CardDescription>
               </CardHeader>
               <CardContent>

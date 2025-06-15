@@ -10,6 +10,7 @@ export interface PracticeQuestion {
   explanation: string;
   difficulty: 'Easy' | 'Medium' | 'Hard';
   topic_id: string;
+  week_number: number;
 }
 
 export interface QuizTopic {
@@ -19,9 +20,9 @@ export interface QuizTopic {
   color: string;
 }
 
-export const usePracticeQuestions = (topicId?: string) => {
+export const usePracticeQuestions = (topicId?: string, weekNumber?: number) => {
   return useQuery({
-    queryKey: ['practice-questions', topicId],
+    queryKey: ['practice-questions', topicId, weekNumber],
     queryFn: async () => {
       let query = supabase
         .from('practice_questions')
@@ -29,6 +30,10 @@ export const usePracticeQuestions = (topicId?: string) => {
       
       if (topicId) {
         query = query.eq('topic_id', topicId);
+      }
+      
+      if (weekNumber) {
+        query = query.eq('week_number', weekNumber);
       }
       
       const { data, error } = await query.order('created_at');
@@ -44,21 +49,43 @@ export const usePracticeQuestions = (topicId?: string) => {
   });
 };
 
-export const useQuizTopics = () => {
+export const useQuizTopics = (weekNumber?: number) => {
   return useQuery({
-    queryKey: ['quiz-topics'],
+    queryKey: ['quiz-topics', weekNumber],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('quiz_topics')
-        .select('*')
-        .order('created_at');
+        .select(`
+          *,
+          practice_questions!inner(week_number)
+        `);
+      
+      if (weekNumber) {
+        query = query.eq('practice_questions.week_number', weekNumber);
+      }
+      
+      const { data, error } = await query.order('created_at');
       
       if (error) {
         console.error('Error fetching quiz topics:', error);
         throw error;
       }
       
-      return data as QuizTopic[];
+      // Remove duplicates and clean up the data
+      const uniqueTopics = data?.reduce((acc: QuizTopic[], current: any) => {
+        const exists = acc.find(topic => topic.id === current.id);
+        if (!exists) {
+          acc.push({
+            id: current.id,
+            name: current.name,
+            description: current.description,
+            color: current.color
+          });
+        }
+        return acc;
+      }, []) || [];
+      
+      return uniqueTopics;
     },
   });
 };

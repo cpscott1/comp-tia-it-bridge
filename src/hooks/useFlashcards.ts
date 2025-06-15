@@ -10,11 +10,12 @@ export interface Flashcard {
   category: string;
   difficulty: 'Easy' | 'Medium' | 'Hard';
   topicId: string;
+  weekNumber: number;
 }
 
-export const useFlashcards = (topicId?: string) => {
+export const useFlashcards = (topicId?: string, weekNumber?: number) => {
   return useQuery({
-    queryKey: ['flashcards', topicId],
+    queryKey: ['flashcards', topicId, weekNumber],
     queryFn: async () => {
       let query = supabase
         .from('practice_questions')
@@ -28,6 +29,10 @@ export const useFlashcards = (topicId?: string) => {
       
       if (topicId) {
         query = query.eq('topic_id', topicId);
+      }
+      
+      if (weekNumber) {
+        query = query.eq('week_number', weekNumber);
       }
       
       const { data, error } = await query.order('created_at');
@@ -45,6 +50,7 @@ export const useFlashcards = (topicId?: string) => {
         category: question.quiz_topics?.name || 'Unknown',
         difficulty: question.difficulty as 'Easy' | 'Medium' | 'Hard',
         topicId: question.topic_id,
+        weekNumber: question.week_number || 1,
       }));
       
       return flashcards;
