@@ -65,17 +65,22 @@ const TopicCard = ({
   const { data: allQuestions = [] } = usePracticeQuestions(topic.id);
   const weekQuestions = allQuestions.filter(q => q.week_number === currentWeek);
   
-  // Get the most recent attempt for this topic (regardless of week for now)
+  // Get the most recent attempt for this topic AND current week specifically
   const recentAttempt = attempts
     .filter(attempt => attempt.topic_id === topic.id)
     .sort((a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime())[0];
 
-  const completionRate = recentAttempt 
+  // Check if the recent attempt matches the current week's question count
+  // If not, don't show it as it's from a different week
+  const isRecentAttemptForCurrentWeek = recentAttempt && 
+    recentAttempt.total_questions === weekQuestions.length;
+
+  const completionRate = isRecentAttemptForCurrentWeek 
     ? Math.round((recentAttempt.score / recentAttempt.total_questions) * 100)
     : 0;
 
   const getStatusInfo = () => {
-    if (!recentAttempt) {
+    if (!isRecentAttemptForCurrentWeek) {
       return {
         icon: <Clock className="h-5 w-5 text-gray-400" />,
         text: "Not started",
@@ -125,11 +130,11 @@ const TopicCard = ({
               {status.text}
             </span>
           </div>
-          {recentAttempt && (
+          {isRecentAttemptForCurrentWeek && (
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Last Score:</span>
               <span className="font-medium">
-                {recentAttempt.score}/{weekQuestions.length > 0 ? weekQuestions.length : recentAttempt.total_questions}
+                {recentAttempt.score}/{weekQuestions.length}
               </span>
             </div>
           )}
