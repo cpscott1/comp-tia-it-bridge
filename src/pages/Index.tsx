@@ -1,3 +1,4 @@
+
 import { Monitor, BookOpen, Target, TrendingUp, Brain, Users, Clock, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -69,22 +70,22 @@ export default function Index() {
   const getWeekObjectives = (week: number) => {
     const baseObjectives = {
       1: [
-        { completed: questionsAnswered >= 5, text: "Identify CPU types and sockets" },
-        { completed: questionsAnswered >= 10, text: "Understand RAM specifications" },
-        { completed: questionsAnswered >= 15, text: "Storage device interfaces" },
-        { completed: questionsAnswered >= 20, text: "Power supply basics" }
+        { completed: questionsAnsweredCurrentWeek >= 5, text: "Identify CPU types and sockets" },
+        { completed: questionsAnsweredCurrentWeek >= 10, text: "Understand RAM specifications" },
+        { completed: questionsAnsweredCurrentWeek >= 15, text: "Storage device interfaces" },
+        { completed: questionsAnsweredCurrentWeek >= 20, text: "Power supply basics" }
       ],
       2: [
-        { completed: questionsAnswered >= 25, text: "Advanced CPU architectures" },
-        { completed: questionsAnswered >= 30, text: "Memory channel configurations" },
-        { completed: questionsAnswered >= 35, text: "NVMe and storage optimization" },
-        { completed: questionsAnswered >= 40, text: "Cooling system design" }
+        { completed: questionsAnsweredCurrentWeek >= 25, text: "Advanced CPU architectures" },
+        { completed: questionsAnsweredCurrentWeek >= 30, text: "Memory channel configurations" },
+        { completed: questionsAnsweredCurrentWeek >= 35, text: "NVMe and storage optimization" },
+        { completed: questionsAnsweredCurrentWeek >= 40, text: "Cooling system design" }
       ],
       3: [
-        { completed: questionsAnswered >= 45, text: "Mobile device components" },
-        { completed: questionsAnswered >= 50, text: "Tablet and smartphone troubleshooting" },
-        { completed: questionsAnswered >= 55, text: "Basic networking concepts" },
-        { completed: questionsAnswered >= 60, text: "Network topology understanding" }
+        { completed: questionsAnsweredCurrentWeek >= 45, text: "Mobile device components" },
+        { completed: questionsAnsweredCurrentWeek >= 50, text: "Tablet and smartphone troubleshooting" },
+        { completed: questionsAnsweredCurrentWeek >= 55, text: "Basic networking concepts" },
+        { completed: questionsAnsweredCurrentWeek >= 60, text: "Network topology understanding" }
       ]
     };
     
@@ -92,10 +93,10 @@ export default function Index() {
     if (!baseObjectives[week]) {
       const baseQuestions = (week - 1) * 20;
       return [
-        { completed: questionsAnswered >= baseQuestions + 5, text: `Week ${week} foundational concepts` },
-        { completed: questionsAnswered >= baseQuestions + 10, text: `Week ${week} intermediate topics` },
-        { completed: questionsAnswered >= baseQuestions + 15, text: `Week ${week} advanced concepts` },
-        { completed: questionsAnswered >= baseQuestions + 20, text: `Week ${week} practical applications` }
+        { completed: questionsAnsweredCurrentWeek >= baseQuestions + 5, text: `Week ${week} foundational concepts` },
+        { completed: questionsAnsweredCurrentWeek >= baseQuestions + 10, text: `Week ${week} intermediate topics` },
+        { completed: questionsAnsweredCurrentWeek >= baseQuestions + 15, text: `Week ${week} advanced concepts` },
+        { completed: questionsAnsweredCurrentWeek >= baseQuestions + 20, text: `Week ${week} practical applications` }
       ];
     }
     
