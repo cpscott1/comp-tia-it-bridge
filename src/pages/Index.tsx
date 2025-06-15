@@ -38,18 +38,24 @@ export default function Index() {
   const avgScore = questionsAnswered > 0 ? Math.round((totalCorrect / questionsAnswered) * 100) : 0;
   const practiceProgress = totalQuestions > 0 ? Math.min((questionsAnswered / totalQuestions) * 100, 100) : 0;
   
-  // Calculate current week based on progress (each week represents ~8.33% of total progress)
+  // Calculate current week based on progress (more realistic progression)
   const calculateCurrentWeek = () => {
-    if (practiceProgress === 0) return 1; // Start at week 1 if no progress
-    const progressBasedWeek = Math.min(Math.ceil(practiceProgress / 8.33), 12);
-    return Math.max(progressBasedWeek, 1);
+    if (questionsAnswered === 0) return 1; // Start at week 1 if no questions answered
+    
+    // Each week requires approximately 15-20 questions to be considered "complete"
+    // This gives a more gradual progression through the 12-week course
+    const questionsPerWeek = Math.max(Math.ceil(totalQuestions / 12), 15);
+    const weekBasedOnQuestions = Math.ceil(questionsAnswered / questionsPerWeek);
+    
+    // Cap at week 12 and ensure minimum of week 1
+    return Math.min(Math.max(weekBasedOnQuestions, 1), 12);
   };
 
   const currentWeek = calculateCurrentWeek();
   const currentWeekInfo = courseWeeks[currentWeek - 1];
   
-  // Calculate overall course progress (based on questions attempted)
-  const weeklyProgress = Math.min(practiceProgress * 0.25, 25); // Cap based on current implementation
+  // Calculate overall course progress (based on current week)
+  const weeklyProgress = ((currentWeek - 1) / 11) * 100; // 11 intervals between 12 weeks
   
   // Calculate study streak and assignments (based on quiz attempts)
   const uniqueDaysStudied = new Set(
@@ -58,28 +64,39 @@ export default function Index() {
 
   // Generate week objectives based on current week
   const getWeekObjectives = (week: number) => {
-    const objectives = {
+    const baseObjectives = {
       1: [
-        { completed: true, text: "Identify CPU types and sockets" },
-        { completed: true, text: "Understand RAM specifications" },
-        { completed: practiceProgress > 20, text: "Storage device interfaces" },
-        { completed: practiceProgress > 30, text: "Power supply basics" }
+        { completed: questionsAnswered >= 5, text: "Identify CPU types and sockets" },
+        { completed: questionsAnswered >= 10, text: "Understand RAM specifications" },
+        { completed: questionsAnswered >= 15, text: "Storage device interfaces" },
+        { completed: questionsAnswered >= 20, text: "Power supply basics" }
       ],
       2: [
-        { completed: practiceProgress > 25, text: "Advanced CPU architectures" },
-        { completed: practiceProgress > 35, text: "Memory channel configurations" },
-        { completed: practiceProgress > 45, text: "NVMe and storage optimization" },
-        { completed: practiceProgress > 55, text: "Cooling system design" }
+        { completed: questionsAnswered >= 25, text: "Advanced CPU architectures" },
+        { completed: questionsAnswered >= 30, text: "Memory channel configurations" },
+        { completed: questionsAnswered >= 35, text: "NVMe and storage optimization" },
+        { completed: questionsAnswered >= 40, text: "Cooling system design" }
       ],
-      // Add more weeks as needed
+      3: [
+        { completed: questionsAnswered >= 45, text: "Mobile device components" },
+        { completed: questionsAnswered >= 50, text: "Tablet and smartphone troubleshooting" },
+        { completed: questionsAnswered >= 55, text: "Basic networking concepts" },
+        { completed: questionsAnswered >= 60, text: "Network topology understanding" }
+      ]
     };
     
-    return objectives[week] || [
-      { completed: false, text: "Week content coming soon" },
-      { completed: false, text: "Additional topics in development" },
-      { completed: false, text: "Practice materials being prepared" },
-      { completed: false, text: "Assessment tools under construction" }
-    ];
+    // For weeks beyond what we've defined, create generic objectives
+    if (!baseObjectives[week]) {
+      const baseQuestions = (week - 1) * 20;
+      return [
+        { completed: questionsAnswered >= baseQuestions + 5, text: `Week ${week} foundational concepts` },
+        { completed: questionsAnswered >= baseQuestions + 10, text: `Week ${week} intermediate topics` },
+        { completed: questionsAnswered >= baseQuestions + 15, text: `Week ${week} advanced concepts` },
+        { completed: questionsAnswered >= baseQuestions + 20, text: `Week ${week} practical applications` }
+      ];
+    }
+    
+    return baseObjectives[week];
   };
 
   const weekObjectives = getWeekObjectives(currentWeek);
