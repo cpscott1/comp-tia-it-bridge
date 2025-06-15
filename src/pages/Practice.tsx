@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { TopicSelector } from "@/components/TopicSelector";
 import { WeekSelector } from "@/components/WeekSelector";
+import { Quiz } from "@/components/Quiz";
 import { useQuizTopics } from "@/hooks/usePracticeQuestions";
 import { useWeekProgress } from "@/hooks/useWeekProgress";
 import { QuizTopic } from "@/hooks/usePracticeQuestions";
@@ -72,16 +73,27 @@ const COURSE_WEEKS = [
 const Practice = () => {
   const { data: weekProgress } = useWeekProgress();
   const [selectedWeek, setSelectedWeek] = useState(weekProgress?.current_week || 1);
+  const [selectedTopic, setSelectedTopic] = useState<QuizTopic | null>(null);
   const { data: topics = [], isLoading } = useQuizTopics(selectedWeek);
 
   const handleTopicSelect = (topic: QuizTopic) => {
     console.log("Selected topic:", topic);
-    // Topic selection logic will be implemented when quiz component is created
+    setSelectedTopic(topic);
   };
 
   const handleWeekChange = (week: number) => {
     setSelectedWeek(week);
+    setSelectedTopic(null); // Clear selected topic when switching weeks
   };
+
+  const handleBackToTopics = () => {
+    setSelectedTopic(null);
+  };
+
+  // If a topic is selected, show the quiz
+  if (selectedTopic) {
+    return <Quiz topic={selectedTopic} onBack={handleBackToTopics} />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
