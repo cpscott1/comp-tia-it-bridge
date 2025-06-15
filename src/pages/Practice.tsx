@@ -72,18 +72,13 @@ const COURSE_WEEKS = [
 
 const Practice = () => {
   const { data: weekProgress } = useWeekProgress();
-  const [selectedWeek, setSelectedWeek] = useState(weekProgress?.current_week || 1);
+  const currentWeek = weekProgress?.current_week || 1;
   const [selectedTopic, setSelectedTopic] = useState<QuizTopic | null>(null);
-  const { data: topics = [], isLoading } = useQuizTopics(selectedWeek);
+  const { data: topics = [], isLoading } = useQuizTopics(currentWeek);
 
   const handleTopicSelect = (topic: QuizTopic) => {
     console.log("Selected topic:", topic);
     setSelectedTopic(topic);
-  };
-
-  const handleWeekChange = (week: number) => {
-    setSelectedWeek(week);
-    setSelectedTopic(null); // Clear selected topic when switching weeks
   };
 
   const handleBackToTopics = () => {
@@ -109,16 +104,16 @@ const Practice = () => {
 
         <WeekSelector 
           courseWeeks={COURSE_WEEKS}
-          currentWeek={selectedWeek}
-          onWeekChange={handleWeekChange}
+          currentWeek={currentWeek}
+          onWeekChange={() => {}} // Disable week changing - user follows progression
         />
 
         <div className="mb-6">
           <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-            Week {selectedWeek}: {COURSE_WEEKS[selectedWeek - 1]?.title}
+            Week {currentWeek}: {COURSE_WEEKS[currentWeek - 1]?.title}
           </h2>
           <p className="text-gray-600 mb-4">
-            {COURSE_WEEKS[selectedWeek - 1]?.description}
+            {COURSE_WEEKS[currentWeek - 1]?.description}
           </p>
         </div>
 
@@ -131,7 +126,7 @@ const Practice = () => {
         {topics.length === 0 && !isLoading && (
           <div className="text-center py-12">
             <div className="text-gray-500 text-lg">
-              No practice questions available for Week {selectedWeek} yet.
+              No practice questions available for Week {currentWeek} yet.
             </div>
             <p className="text-gray-400 mt-2">
               Content for this week is coming soon!
