@@ -1,9 +1,8 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Clock, BookOpen } from "lucide-react";
 import { QuizTopic } from "@/hooks/usePracticeQuestions";
 import { usePracticeQuestions } from "@/hooks/usePracticeQuestions";
-import { useQuizAttempts } from "@/hooks/useQuizAttempts";
+import { useUserQuizAttempts } from "@/hooks/useQuizAttempts";
 import { useWeekProgress } from "@/hooks/useWeekProgress";
 
 interface TopicSelectorProps {
@@ -15,7 +14,7 @@ interface TopicSelectorProps {
 export const TopicSelector = ({ topics, onTopicSelect, loading }: TopicSelectorProps) => {
   const { data: weekProgress } = useWeekProgress();
   const currentWeek = weekProgress?.current_week || 1;
-  const { data: attempts = [] } = useQuizAttempts();
+  const { data: attempts = [] } = useUserQuizAttempts();
 
   if (loading) {
     return (
