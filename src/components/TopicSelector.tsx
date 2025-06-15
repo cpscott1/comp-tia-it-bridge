@@ -129,7 +129,7 @@ const TopicCard = ({
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Last Score:</span>
               <span className="font-medium">
-                {recentAttempt.score}/{recentAttempt.total_questions}
+                {recentAttempt.score}/{weekQuestions.length > 0 ? weekQuestions.length : recentAttempt.total_questions}
               </span>
             </div>
           )}
