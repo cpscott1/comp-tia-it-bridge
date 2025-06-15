@@ -38,16 +38,21 @@ export const WeekSelector = ({ courseWeeks, currentWeek, onWeekChange }: WeekSel
 
   // Check if current week objectives are completed
   const areCurrentWeekObjectivesCompleted = () => {
-    const questionsAnswered = quizAttempts.reduce((sum, attempt) => sum + attempt.total_questions, 0);
-    const requiredQuestions = currentWeek * 20; // 20 questions per week
-    return questionsAnswered >= requiredQuestions;
+    const weekAttempts = quizAttempts.filter(attempt => {
+      // This is a simple check - in practice you might want more sophisticated logic
+      return attempt.total_questions > 0;
+    });
+    
+    // For now, require at least one quiz attempt to advance
+    // In the future, this could be more sophisticated (e.g., minimum score, all topics covered)
+    return weekAttempts.length > 0;
   };
 
   const handleAdvanceWeek = async () => {
     if (!areCurrentWeekObjectivesCompleted()) {
       toast({
         title: "Week not complete",
-        description: "Complete all objectives for this week before advancing.",
+        description: "Complete practice questions for this week before advancing.",
         variant: "destructive",
       });
       return;
@@ -84,18 +89,19 @@ export const WeekSelector = ({ courseWeeks, currentWeek, onWeekChange }: WeekSel
             const completed = isWeekCompleted(week.number);
             const accessible = canAccessWeek(week.number);
             const isCurrent = week.number === currentWeek;
+            const isComingSoon = week.title === "Coming Soon";
             
             return (
               <button
                 key={week.number}
-                onClick={() => accessible ? onWeekChange(week.number) : null}
-                disabled={!accessible}
+                onClick={() => accessible && !isComingSoon ? onWeekChange(week.number) : null}
+                disabled={!accessible || isComingSoon}
                 className={`p-3 rounded-lg border-2 text-left transition-all ${
-                  isCurrent
+                  isCurrent && !isComingSoon
                     ? 'border-blue-500 bg-blue-50 text-blue-900'
                     : completed
                     ? 'border-green-500 bg-green-50 text-green-900 hover:bg-green-100'
-                    : accessible
+                    : accessible && !isComingSoon
                     ? 'border-gray-300 bg-white hover:border-gray-400 hover:bg-gray-50'
                     : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
                 }`}
@@ -104,22 +110,27 @@ export const WeekSelector = ({ courseWeeks, currentWeek, onWeekChange }: WeekSel
                   <span className="font-medium text-sm">Week {week.number}</span>
                   {completed && <CheckCircle className="h-4 w-4 text-green-600" />}
                   {!accessible && <Lock className="h-4 w-4 text-gray-400" />}
-                  {isCurrent && !completed && <Clock className="h-4 w-4 text-blue-600" />}
+                  {isCurrent && !completed && !isComingSoon && <Clock className="h-4 w-4 text-blue-600" />}
                 </div>
                 <div className="text-xs opacity-75 line-clamp-2">
                   {week.title}
                 </div>
+                {isComingSoon && (
+                  <Badge variant="outline" className="mt-1 text-xs">
+                    Coming Soon
+                  </Badge>
+                )}
               </button>
             );
           })}
         </div>
 
-        {weekProgress && currentWeek < 12 && (
+        {weekProgress && currentWeek < 12 && !courseWeeks[currentWeek - 1]?.title.includes("Coming Soon") && (
           <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
             <div>
               <h4 className="font-medium text-blue-900">Ready for next week?</h4>
               <p className="text-sm text-blue-700">
-                Complete all objectives to advance to Week {currentWeek + 1}
+                Complete practice questions to advance to Week {currentWeek + 1}
               </p>
             </div>
             <Button
