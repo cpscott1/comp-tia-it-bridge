@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { CheckCircle, XCircle, ArrowLeft, RotateCcw } from "lucide-react";
 import { usePracticeQuestions, QuizTopic } from "@/hooks/usePracticeQuestions";
 import { useSaveQuizAttempt } from "@/hooks/useQuizAttempts";
+import { useWeekProgress } from "@/hooks/useWeekProgress";
 import { useToast } from "@/hooks/use-toast";
 
 interface QuizProps {
@@ -14,9 +15,14 @@ interface QuizProps {
 }
 
 export const Quiz = ({ topic, onBack }: QuizProps) => {
-  const { data: questions = [], isLoading } = usePracticeQuestions(topic.id);
+  const { data: weekProgress } = useWeekProgress();
+  const currentWeek = weekProgress?.current_week || 1;
+  const { data: allQuestions = [], isLoading } = usePracticeQuestions(topic.id);
   const saveAttempt = useSaveQuizAttempt();
   const { toast } = useToast();
+  
+  // Filter questions to only show those from the current week
+  const questions = allQuestions.filter(question => question.week_number === currentWeek);
   
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
@@ -109,7 +115,7 @@ export const Quiz = ({ topic, onBack }: QuizProps) => {
             </div>
             <CardTitle>No Questions Available</CardTitle>
             <CardDescription>
-              There are no practice questions available for {topic.name} yet.
+              There are no practice questions available for {topic.name} in Week {currentWeek} yet.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -133,7 +139,7 @@ export const Quiz = ({ topic, onBack }: QuizProps) => {
               </Button>
             </div>
             <CardTitle className="text-center">Quiz Results</CardTitle>
-            <CardDescription className="text-center">{topic.name}</CardDescription>
+            <CardDescription className="text-center">{topic.name} - Week {currentWeek}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-center mb-6">
@@ -223,7 +229,7 @@ export const Quiz = ({ topic, onBack }: QuizProps) => {
               Back
             </Button>
             <div className="text-sm text-gray-500">
-              Question {currentQuestionIndex + 1} of {questions.length}
+              Question {currentQuestionIndex + 1} of {questions.length} (Week {currentWeek})
             </div>
           </div>
           <CardTitle>{topic.name}</CardTitle>
