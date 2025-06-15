@@ -65,14 +65,22 @@ export const useAdvanceWeek = () => {
     mutationFn: async (weekToComplete: number) => {
       if (!user) throw new Error('User not authenticated');
       
+      // First get current progress to append to completed_weeks array
+      const { data: currentProgress } = await supabase
+        .from('user_week_progress')
+        .select('completed_weeks')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (!currentProgress) throw new Error('No progress found');
+      
+      const updatedCompletedWeeks = [...currentProgress.completed_weeks, weekToComplete];
+      
       const { data, error } = await supabase
         .from('user_week_progress')
         .update({
           current_week: weekToComplete + 1,
-          completed_weeks: supabase.rpc('array_append', {
-            array_col: 'completed_weeks',
-            new_element: weekToComplete
-          }),
+          completed_weeks: updatedCompletedWeeks,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', user.id)

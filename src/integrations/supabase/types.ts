@@ -142,6 +142,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_week_progress: {
+        Row: {
+          completed_weeks: number[]
+          created_at: string
+          current_week: number
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_weeks?: number[]
+          created_at?: string
+          current_week?: number
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_weeks?: number[]
+          created_at?: string
+          current_week?: number
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
