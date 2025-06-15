@@ -31,20 +31,30 @@ const courseWeeks = [
 export default function Index() {
   const { user } = useAuth();
   const { data: quizAttempts = [] } = useUserQuizAttempts();
-  const { data: allQuestions = [] } = usePracticeQuestions();
   const { data: weekProgress } = useWeekProgress();
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
-
-  // Calculate real progress data
-  const totalQuestions = allQuestions.length;
-  const questionsAnswered = quizAttempts.reduce((sum, attempt) => sum + attempt.total_questions, 0);
-  const totalCorrect = quizAttempts.reduce((sum, attempt) => sum + attempt.score, 0);
-  const avgScore = questionsAnswered > 0 ? Math.round((totalCorrect / questionsAnswered) * 100) : 0;
-  const practiceProgress = totalQuestions > 0 ? Math.min((questionsAnswered / totalQuestions) * 100, 100) : 0;
   
   // Use week progression system instead of automatic calculation
   const currentWeek = selectedWeek || weekProgress?.current_week || 1;
   const currentWeekInfo = courseWeeks[currentWeek - 1];
+  
+  // Get questions for the current week specifically
+  const { data: currentWeekQuestions = [] } = usePracticeQuestions(undefined, currentWeek);
+  
+  // Calculate progress for current week only
+  const currentWeekAttempts = quizAttempts.filter(attempt => {
+    // Check if this attempt matches questions from current week by comparing total questions
+    const weekQuestionCount = currentWeekQuestions.length;
+    return attempt.total_questions === weekQuestionCount;
+  });
+  
+  const questionsAnsweredCurrentWeek = currentWeekAttempts.reduce((sum, attempt) => sum + attempt.total_questions, 0);
+  const totalCorrectCurrentWeek = currentWeekAttempts.reduce((sum, attempt) => sum + attempt.score, 0);
+  const avgScore = questionsAnsweredCurrentWeek > 0 ? Math.round((totalCorrectCurrentWeek / questionsAnsweredCurrentWeek) * 100) : 0;
+  
+  // Practice progress should show completed questions vs available questions for current week
+  const totalQuestionsCurrentWeek = currentWeekQuestions.length;
+  const practiceProgress = totalQuestionsCurrentWeek > 0 ? Math.min((questionsAnsweredCurrentWeek / totalQuestionsCurrentWeek) * 100, 100) : 0;
   
   // Calculate overall course progress based on completed weeks
   const completedWeeks = weekProgress?.completed_weeks?.length || 0;
@@ -193,8 +203,8 @@ export default function Index() {
             <CardContent>
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span>Questions Completed</span>
-                  <span className="font-medium">{questionsAnswered}/{totalQuestions}</span>
+                  <span>Week {currentWeek} Questions</span>
+                  <span className="font-medium">{questionsAnsweredCurrentWeek}/{totalQuestionsCurrentWeek}</span>
                 </div>
                 <Progress value={practiceProgress} className="h-2" />
                 <Link to="/practice">
@@ -220,9 +230,9 @@ export default function Index() {
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span>Cards Available</span>
-                  <span className="font-medium">{totalQuestions}</span>
+                  <span className="font-medium">{totalQuestionsCurrentWeek}</span>
                 </div>
-                <Progress value={Math.min((questionsAnswered / Math.max(totalQuestions, 1)) * 100, 100)} className="h-2" />
+                <Progress value={practiceProgress} className="h-2" />
                 <Link to="/flashcards">
                   <Button className="w-full" variant="outline">
                     Study Flashcards
