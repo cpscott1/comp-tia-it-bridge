@@ -1,16 +1,18 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useInstructorInvitation } from '@/hooks/useInstructorInvitation';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
-import { GraduationCap, Users } from 'lucide-react';
+import { GraduationCap, Users, KeyRound } from 'lucide-react';
 
 export default function InstructorAuth() {
   const { signIn, signUp } = useAuth();
+  const { validateAndUseInvitationCode, loading: invitationLoading } = useInstructorInvitation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
@@ -26,6 +28,7 @@ export default function InstructorAuth() {
     email: '',
     password: '',
     confirmPassword: '',
+    invitationCode: '',
   });
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -71,29 +74,55 @@ export default function InstructorAuth() {
       return;
     }
 
+    if (!signUpData.invitationCode.trim()) {
+      toast({
+        title: "Invitation code required",
+        description: "Please enter a valid invitation code to create an instructor account.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const { error } = await signUp(
+      // First create the user account
+      const { error: signUpError } = await signUp(
         signUpData.email,
         signUpData.password,
         signUpData.firstName,
         signUpData.lastName
       );
       
-      if (error) {
+      if (signUpError) {
         toast({
           title: "Sign up failed",
-          description: error.message,
+          description: signUpError.message,
           variant: "destructive",
         });
-      } else {
-        toast({
-          title: "Instructor Account Created!",
-          description: "Please check your email to verify your account, then contact admin to activate instructor privileges.",
-        });
-        navigate('/instructor');
+        return;
       }
+
+      // Then validate and use the invitation code
+      const { success, error: invitationError } = await validateAndUseInvitationCode(
+        signUpData.invitationCode,
+        signUpData.email
+      );
+
+      if (!success) {
+        toast({
+          title: "Invalid invitation code",
+          description: invitationError || "The invitation code is invalid or has expired.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Instructor Account Created!",
+        description: "Your instructor account has been created successfully. Please check your email to verify your account.",
+      });
+      navigate('/instructor');
     } catch (error) {
       toast({
         title: "Error",
@@ -124,7 +153,7 @@ export default function InstructorAuth() {
                 <CardTitle>{isSignUp ? 'Create Instructor Account' : 'Instructor Sign In'}</CardTitle>
                 <CardDescription>
                   {isSignUp 
-                    ? 'Register for instructor access to manage students and track progress'
+                    ? 'Register with a valid invitation code to access instructor features'
                     : 'Sign in to access your instructor dashboard'
                   }
                 </CardDescription>
@@ -162,6 +191,19 @@ export default function InstructorAuth() {
               </form>
             ) : (
               <form onSubmit={handleSignUp} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="invitation-code" className="flex items-center gap-2">
+                    <KeyRound className="h-4 w-4" />
+                    Invitation Code
+                  </Label>
+                  <Input
+                    id="invitation-code"
+                    placeholder="Enter invitation code"
+                    value={signUpData.invitationCode}
+                    onChange={(e) => setSignUpData({ ...signUpData, invitationCode: e.target.value })}
+                    required
+                  />
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="instructor-firstname">First Name</Label>
@@ -217,8 +259,12 @@ export default function InstructorAuth() {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700" disabled={loading}>
-                  {loading ? 'Creating Account...' : 'Create Instructor Account'}
+                <Button 
+                  type="submit" 
+                  className="w-full bg-purple-600 hover:bg-purple-700" 
+                  disabled={loading || invitationLoading}
+                >
+                  {loading || invitationLoading ? 'Creating Account...' : 'Create Instructor Account'}
                 </Button>
               </form>
             )}

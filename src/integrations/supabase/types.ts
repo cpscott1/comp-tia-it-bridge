@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      instructor_invitations: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          email: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: []
+      }
       practice_questions: {
         Row: {
           correct_answer: number
@@ -177,7 +213,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      use_invitation_code: {
+        Args: { invitation_code: string; user_email: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
