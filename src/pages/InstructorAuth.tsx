@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useInstructorInvitation } from '@/hooks/useInstructorInvitation';
 import { useNavigate } from 'react-router-dom';
@@ -32,7 +33,7 @@ export default function InstructorAuth() {
   });
 
   // Check if user is already authenticated and has instructor role
-  React.useEffect(() => {
+  useEffect(() => {
     const checkUserRole = async () => {
       if (user) {
         console.log('User found, checking role...');
