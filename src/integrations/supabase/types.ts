@@ -213,6 +213,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       use_invitation_code: {
         Args: { invitation_code: string; user_email: string }
         Returns: boolean
