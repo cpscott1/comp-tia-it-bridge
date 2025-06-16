@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -424,9 +423,6 @@ const InstructorDashboard = () => {
                             <h4 className="font-semibold text-gray-900 mb-2">Documentation:</h4>
                             <p className="text-gray-700 whitespace-pre-wrap">{submission.documentation}</p>
                           </div>
-                          {submission.student_email && (
-                            <p className="text-sm text-gray-500 mt-2">Student email: {submission.student_email}</p>
-                          )}
                         </CardContent>
                       </Card>
                     ))}
