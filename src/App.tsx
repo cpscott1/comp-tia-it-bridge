@@ -16,6 +16,7 @@ import Downloads from "./pages/Downloads";
 import InstructorDashboard from "./pages/InstructorDashboard";
 import Auth from "./pages/Auth";
 import InstructorAuth from "./pages/InstructorAuth";
+import InvitationManager from "./pages/InvitationManager";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
