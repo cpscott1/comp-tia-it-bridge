@@ -1,4 +1,3 @@
-
 export interface ChecklistItem {
   id: string;
   title: string;
@@ -148,9 +147,18 @@ export const JOB_READINESS_CHECKLIST: ChecklistItem[] = [
     estimatedTime: "3-4 hours",
     phase: "Phase 2: Skill Development (Weeks 5-8)"
   },
+  {
+    id: "tech-11",
+    title: "Build Home Lab",
+    description: "Set up a basic home lab to practice troubleshooting skills",
+    category: 'technical',
+    priority: 'medium',
+    estimatedTime: "4-6 hours",
+    phase: "Phase 2: Skill Development (Weeks 5-8)"
+  },
   // Phase 2: Skill Development (Weeks 5-8) - Soft Skills
   {
-    id: "skills-3",
+    id: "skills-1",
     title: "Develop active listening techniques",
     description: "Practice listening skills to better understand user problems and concerns",
     category: 'skills',
@@ -159,7 +167,7 @@ export const JOB_READINESS_CHECKLIST: ChecklistItem[] = [
     phase: "Phase 2: Skill Development (Weeks 5-8)"
   },
   {
-    id: "skills-4",
+    id: "skills-2",
     title: "Practice explaining technical concepts simply",
     description: "Learn to communicate complex IT issues in user-friendly language",
     category: 'skills',
@@ -168,7 +176,7 @@ export const JOB_READINESS_CHECKLIST: ChecklistItem[] = [
     phase: "Phase 2: Skill Development (Weeks 5-8)"
   },
   {
-    id: "skills-5",
+    id: "skills-3",
     title: "Learn conflict resolution basics",
     description: "Develop skills to handle frustrated users and difficult situations",
     category: 'skills',
@@ -177,7 +185,7 @@ export const JOB_READINESS_CHECKLIST: ChecklistItem[] = [
     phase: "Phase 2: Skill Development (Weeks 5-8)"
   },
   {
-    id: "skills-6",
+    id: "skills-4",
     title: "Improve written communication skills",
     description: "Practice writing professional emails and clear technical instructions",
     category: 'skills',
@@ -186,12 +194,21 @@ export const JOB_READINESS_CHECKLIST: ChecklistItem[] = [
     phase: "Phase 2: Skill Development (Weeks 5-8)"
   },
   {
-    id: "skills-7",
+    id: "skills-5",
     title: "Practice time management and prioritization",
     description: "Learn to manage multiple tickets and prioritize urgent vs non-urgent issues",
     category: 'skills',
     priority: 'medium',
     estimatedTime: "1-2 hours",
+    phase: "Phase 2: Skill Development (Weeks 5-8)"
+  },
+  {
+    id: "skills-6",
+    title: "Practice Technical Terminology",
+    description: "Review and practice explaining common IT terms and concepts",
+    category: 'skills',
+    priority: 'high',
+    estimatedTime: "1 hour",
     phase: "Phase 2: Skill Development (Weeks 5-8)"
   },
   // Phase 3: Certification & Job Search (Weeks 9-12) - Certification
@@ -240,61 +257,15 @@ export const JOB_READINESS_CHECKLIST: ChecklistItem[] = [
     estimatedTime: "4-6 hours (exam time)",
     phase: "Phase 3: Certification & Job Search (Weeks 9-12)"
   },
-  // Phase 3: Certification & Job Search (Weeks 9-12) - Job Search Preparation
-  {
-    id: "job-1",
-    title: "Complete resume using provided template",
-    description: "Create a polished, professional resume using one of the provided IT-focused templates",
-    category: 'application',
-    priority: 'high',
-    estimatedTime: "3-4 hours",
-    phase: "Phase 3: Certification & Job Search (Weeks 9-12)"
-  },
-  {
-    id: "job-2",
-    title: "Write compelling cover letter template",
-    description: "Develop a customizable cover letter template that highlights your IT skills and certification",
-    category: 'application',
-    priority: 'high',
-    estimatedTime: "2-3 hours",
-    phase: "Phase 3: Certification & Job Search (Weeks 9-12)"
-  },
-  {
-    id: "job-3",
-    title: "Prepare for common interview questions",
-    description: "Practice answers for typical help desk and entry-level IT interview questions",
-    category: 'interview',
-    priority: 'high',
-    estimatedTime: "3-4 hours",
-    phase: "Phase 3: Certification & Job Search (Weeks 9-12)"
-  },
-  {
-    id: "job-4",
-    title: "Practice salary negotiation techniques",
-    description: "Learn strategies for negotiating salary and benefits for entry-level IT positions",
-    category: 'interview',
-    priority: 'medium',
-    estimatedTime: "1-2 hours",
-    phase: "Phase 3: Certification & Job Search (Weeks 9-12)"
-  },
-  {
-    id: "job-5",
-    title: "Apply to 5-10 entry-level positions weekly",
-    description: "Consistently apply to help desk, desktop support, and other entry-level IT positions",
-    category: 'application',
-    priority: 'high',
-    estimatedTime: "2-3 hours weekly",
-    phase: "Phase 3: Certification & Job Search (Weeks 9-12)"
-  },
-  // Original items (keeping existing functionality)
+  // Phase 3: Certification & Job Search (Weeks 9-12) - Resume & Application
   {
     id: "resume-1",
     title: "Create Technical Resume",
-    description: "Build a resume highlighting your IT skills and CompTIA A+ knowledge",
+    description: "Build a resume highlighting your IT skills and CompTIA A+ knowledge using provided template",
     category: 'resume',
     priority: 'high',
-    estimatedTime: "2-3 hours",
-    phase: "Resume & Application Phase"
+    estimatedTime: "3-4 hours",
+    phase: "Phase 3: Certification & Job Search (Weeks 9-12)"
   },
   {
     id: "resume-2",
@@ -303,34 +274,44 @@ export const JOB_READINESS_CHECKLIST: ChecklistItem[] = [
     category: 'resume',
     priority: 'high',
     estimatedTime: "15 minutes",
-    phase: "Resume & Application Phase"
+    phase: "Phase 3: Certification & Job Search (Weeks 9-12)"
   },
   {
-    id: "skills-1",
-    title: "Practice Technical Terminology",
-    description: "Review and practice explaining common IT terms and concepts",
-    category: 'skills',
+    id: "application-1",
+    title: "Write compelling cover letter template",
+    description: "Develop a customizable cover letter template that highlights your IT skills and certification",
+    category: 'application',
     priority: 'high',
-    estimatedTime: "1 hour",
-    phase: "Skills Development Phase"
+    estimatedTime: "2-3 hours",
+    phase: "Phase 3: Certification & Job Search (Weeks 9-12)"
   },
   {
-    id: "skills-2",
-    title: "Build Home Lab",
-    description: "Set up a basic home lab to practice troubleshooting skills",
-    category: 'skills',
-    priority: 'medium',
-    estimatedTime: "4-6 hours",
-    phase: "Skills Development Phase"
+    id: "application-2",
+    title: "Apply to 5-10 entry-level positions weekly",
+    description: "Consistently apply to help desk, desktop support, and other entry-level IT positions",
+    category: 'application',
+    priority: 'high',
+    estimatedTime: "2-3 hours weekly",
+    phase: "Phase 3: Certification & Job Search (Weeks 9-12)"
   },
+  {
+    id: "application-3",
+    title: "Research Target Companies",
+    description: "Identify potential employers and learn about their IT environments",
+    category: 'application',
+    priority: 'medium',
+    estimatedTime: "30 minutes per company",
+    phase: "Phase 3: Certification & Job Search (Weeks 9-12)"
+  },
+  // Phase 3: Certification & Job Search (Weeks 9-12) - Interview Preparation
   {
     id: "interview-1",
-    title: "Prepare Common Interview Questions",
-    description: "Practice answers for typical help desk and entry-level IT questions",
+    title: "Prepare for common interview questions",
+    description: "Practice answers for typical help desk and entry-level IT interview questions",
     category: 'interview',
     priority: 'high',
-    estimatedTime: "2 hours",
-    phase: "Interview Preparation Phase"
+    estimatedTime: "3-4 hours",
+    phase: "Phase 3: Certification & Job Search (Weeks 9-12)"
   },
   {
     id: "interview-2",
@@ -339,25 +320,16 @@ export const JOB_READINESS_CHECKLIST: ChecklistItem[] = [
     category: 'interview',
     priority: 'medium',
     estimatedTime: "1 hour",
-    phase: "Interview Preparation Phase"
+    phase: "Phase 3: Certification & Job Search (Weeks 9-12)"
   },
   {
-    id: "application-1",
-    title: "Create Professional Profiles",
-    description: "Set up LinkedIn and other professional networking profiles",
-    category: 'application',
+    id: "interview-3",
+    title: "Practice salary negotiation techniques",
+    description: "Learn strategies for negotiating salary and benefits for entry-level IT positions",
+    category: 'interview',
     priority: 'medium',
     estimatedTime: "1-2 hours",
-    phase: "Application Phase"
-  },
-  {
-    id: "application-2",
-    title: "Research Target Companies",
-    description: "Identify potential employers and learn about their IT environments",
-    category: 'application',
-    priority: 'medium',
-    estimatedTime: "30 minutes per company",
-    phase: "Application Phase"
+    phase: "Phase 3: Certification & Job Search (Weeks 9-12)"
   }
 ];
 
@@ -464,8 +436,8 @@ Sample Answer: "I've always been the person friends and family call when they ha
 "How would you help a frustrated customer who can't access their email?"
 Sample Answer: "First, I'd listen carefully and acknowledge their frustration to show I understand how important email access is to their work. Then I'd ask specific questions to gather information: when did the problem start, what error messages they're seeing, and what they were doing when it occurred. I'd walk them through basic troubleshooting steps like checking their internet connection and trying to access email from a different device. Throughout the process, I'd explain what we're doing and why, keeping them informed and involved in the solution."
 
-"What would you do if you couldn't solve a customer's problem?"
-Sample Answer: "I'd first make sure I've exhausted all the troubleshooting steps within my knowledge and authority. If I still can't resolve the issue, I'd escalate it to a senior technician or my supervisor, but I'd make sure to document everything I've already tried so the next person doesn't repeat the same steps. I'd also follow up with the customer to ensure their issue was resolved and they're satisfied with the outcome."
+"How would you handle a situation where a customer is not following your instructions?"
+Sample Answer: "I'd first try to understand the customer's perspective and identify any misunderstandings. I'd then rephrase my instructions in a clear and concise manner, providing additional examples or clarifications if necessary. If the customer still doesn't follow my instructions, I'd escalate the issue to a supervisor or manager, but I'd make sure to document everything I've already tried to ensure the customer's issue is resolved."
 
 "How do you stay current with technology?"
 Sample Answer: "I follow several IT news websites and blogs, participate in online forums, and practice with home lab setups. I also plan to pursue additional certifications like Network+ or Security+ to expand my knowledge. I believe continuous learning is essential in IT since technology constantly evolves."`,
