@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useInstructorInvitation } from '@/hooks/useInstructorInvitation';
@@ -9,9 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
 import { GraduationCap, Users, KeyRound } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function InstructorAuth() {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, user } = useAuth();
   const { validateAndUseInvitationCode, loading: invitationLoading } = useInstructorInvitation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -31,27 +31,66 @@ export default function InstructorAuth() {
     invitationCode: '',
   });
 
+  // Check if user is already authenticated and has instructor role
+  React.useEffect(() => {
+    const checkUserRole = async () => {
+      if (user) {
+        console.log('User found, checking role...');
+        try {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+          
+          console.log('User profile:', profile);
+          
+          if (error) {
+            console.error('Error fetching profile:', error);
+            return;
+          }
+          
+          if (profile?.role === 'instructor' || profile?.role === 'admin') {
+            console.log('User has instructor role, redirecting...');
+            navigate('/instructor');
+          } else {
+            console.log('User does not have instructor role');
+            toast({
+              title: "Access Denied",
+              description: "You don't have instructor privileges. Please use a valid invitation code to create an instructor account.",
+              variant: "destructive",
+            });
+          }
+        } catch (error) {
+          console.error('Error checking user role:', error);
+        }
+      }
+    };
+
+    checkUserRole();
+  }, [user, navigate]);
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      console.log('Attempting sign in...');
       const { error } = await signIn(signInData.email, signInData.password);
       
       if (error) {
+        console.error('Sign in error:', error);
         toast({
           title: "Sign in failed",
           description: error.message,
           variant: "destructive",
         });
       } else {
-        toast({
-          title: "Welcome back, Instructor!",
-          description: "Successfully signed in to your instructor account.",
-        });
-        navigate('/instructor');
+        console.log('Sign in successful, checking role...');
+        // The useEffect above will handle the role check and navigation
       }
     } catch (error) {
+      console.error('Unexpected error during sign in:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
@@ -86,6 +125,7 @@ export default function InstructorAuth() {
     setLoading(true);
 
     try {
+      console.log('Attempting sign up...');
       // First create the user account
       const { error: signUpError } = await signUp(
         signUpData.email,
@@ -95,6 +135,7 @@ export default function InstructorAuth() {
       );
       
       if (signUpError) {
+        console.error('Sign up error:', signUpError);
         toast({
           title: "Sign up failed",
           description: signUpError.message,
@@ -103,6 +144,7 @@ export default function InstructorAuth() {
         return;
       }
 
+      console.log('Sign up successful, validating invitation code...');
       // Then validate and use the invitation code
       const { success, error: invitationError } = await validateAndUseInvitationCode(
         signUpData.invitationCode,
@@ -110,6 +152,7 @@ export default function InstructorAuth() {
       );
 
       if (!success) {
+        console.error('Invitation validation error:', invitationError);
         toast({
           title: "Invalid invitation code",
           description: invitationError || "The invitation code is invalid or has expired.",
@@ -124,6 +167,7 @@ export default function InstructorAuth() {
       });
       navigate('/instructor');
     } catch (error) {
+      console.error('Unexpected error during sign up:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
