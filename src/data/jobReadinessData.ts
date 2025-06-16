@@ -1,4 +1,3 @@
-
 export interface ChecklistItem {
   id: string;
   title: string;
@@ -362,18 +361,6 @@ export const JOB_READINESS_CHECKLIST: ChecklistItem[] = [
 ];
 
 export const RESUME_TEMPLATES = [
-  {
-    id: "it-entry",
-    title: "Entry-Level IT Resume",
-    description: "Perfect for help desk and desktop support positions",
-    downloadUrl: "#"
-  },
-  {
-    id: "comptia-focused",
-    title: "CompTIA A+ Focused Resume",
-    description: "Highlights certification and technical skills",
-    downloadUrl: "#"
-  },
   {
     id: "help-desk-template",
     title: "Entry-Level IT Help Desk Resume Template",
