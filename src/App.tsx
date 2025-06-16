@@ -9,6 +9,10 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Practice from "./pages/Practice";
 import Flashcards from "./pages/Flashcards";
+import HelpDesk from "./pages/HelpDesk";
+import JobReadiness from "./pages/JobReadiness";
+import Downloads from "./pages/Downloads";
+import InstructorDashboard from "./pages/InstructorDashboard";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -36,6 +40,26 @@ const App = () => (
             <Route path="/flashcards" element={
               <ProtectedRoute>
                 <Flashcards />
+              </ProtectedRoute>
+            } />
+            <Route path="/help-desk" element={
+              <ProtectedRoute>
+                <HelpDesk />
+              </ProtectedRoute>
+            } />
+            <Route path="/job-readiness" element={
+              <ProtectedRoute>
+                <JobReadiness />
+              </ProtectedRoute>
+            } />
+            <Route path="/downloads" element={
+              <ProtectedRoute>
+                <Downloads />
+              </ProtectedRoute>
+            } />
+            <Route path="/instructor" element={
+              <ProtectedRoute>
+                <InstructorDashboard />
               </ProtectedRoute>
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

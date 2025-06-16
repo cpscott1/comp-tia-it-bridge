@@ -1,4 +1,5 @@
-import { Monitor, BookOpen, Target, TrendingUp, Brain, Users, Clock, CheckCircle } from 'lucide-react';
+
+import { Monitor, BookOpen, Target, TrendingUp, Brain, Users, Clock, CheckCircle, Briefcase, FileText, AlertCircle, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -248,25 +249,101 @@ export default function Index() {
           <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <Users className="h-5 w-5 text-purple-600" />
-                <span>Class Discussion</span>
+                <AlertCircle className="h-5 w-5 text-orange-600" />
+                <span>Help Desk Scenarios</span>
               </CardTitle>
               <CardDescription>
-                Connect with classmates and ask questions
+                Practice real-world IT support situations
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span>Available Scenarios</span>
+                  <span className="font-medium">5</span>
+                </div>
+                <Progress value={0} className="h-2" />
+                <Link to="/help-desk">
+                  <Button className="w-full" variant="outline">
+                    Practice Scenarios
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Briefcase className="h-5 w-5 text-purple-600" />
+                <span>Job Readiness</span>
+              </CardTitle>
+              <CardDescription>
+                Prepare for your IT career with job readiness tools
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span>Checklist Items</span>
+                  <span className="font-medium">8</span>
+                </div>
+                <Progress value={0} className="h-2" />
+                <Link to="/job-readiness">
+                  <Button className="w-full" variant="outline">
+                    Career Prep
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <FileText className="h-5 w-5 text-indigo-600" />
+                <span>Study Materials</span>
+              </CardTitle>
+              <CardDescription>
+                Download PDFs, guides, and reference materials
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span>Available Downloads</span>
+                  <span className="font-medium">3</span>
+                </div>
+                <Progress value={100} className="h-2" />
+                <Link to="/downloads">
+                  <Button className="w-full" variant="outline">
+                    View Downloads
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <GraduationCap className="h-5 w-5 text-red-600" />
+                <span>Instructor View</span>
+              </CardTitle>
+              <CardDescription>
+                Access instructor dashboard and class management
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <div className="text-sm text-gray-600">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span>Coming Soon</span>
-                  </div>
-                  <div className="text-xs">Forum functionality in development</div>
+                  Manage students and track class progress
                 </div>
-                <Button className="w-full" variant="outline" disabled>
-                  Join Discussion
-                </Button>
+                <Link to="/instructor">
+                  <Button className="w-full" variant="outline">
+                    Instructor Dashboard
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>
@@ -315,14 +392,21 @@ export default function Index() {
                       🧠 Study Component Flashcards
                     </Button>
                   </Link>
-                  <Link to="/practice">
+                  <Link to="/help-desk">
                     <Button variant="outline" size="sm" className="w-full justify-start">
-                      🎯 Take Week {currentWeek} Quiz
+                      🎯 Practice Help Desk Scenarios
                     </Button>
                   </Link>
-                  <Button variant="outline" size="sm" className="w-full justify-start" disabled>
-                    💬 Ask Questions in Discussion
-                  </Button>
+                  <Link to="/downloads">
+                    <Button variant="outline" size="sm" className="w-full justify-start">
+                      📁 Download Study Materials
+                    </Button>
+                  </Link>
+                  <Link to="/job-readiness">
+                    <Button variant="outline" size="sm" className="w-full justify-start">
+                      💼 Work on Job Readiness
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </div>
