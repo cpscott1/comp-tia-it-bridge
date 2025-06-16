@@ -1,3 +1,4 @@
+
 export interface ChecklistItem {
   id: string;
   title: string;
@@ -443,7 +444,10 @@ I would welcome the opportunity to discuss how my technical certification, probl
 Sincerely,
 [Your Name]`,
     downloadUrl: "#"
-  },
+  }
+];
+
+export const INTERVIEW_GUIDES = [
   {
     id: "interview-guide",
     title: "Interview Preparation Guide",
