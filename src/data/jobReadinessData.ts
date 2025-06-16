@@ -426,5 +426,35 @@ CompTIA A+ Training Program | [Training Provider] | [Year]
 - 12-week intensive program covering hardware, software, and troubleshooting
 - Hands-on labs and real-world scenario practice`,
     downloadUrl: "#"
+  },
+  {
+    id: "cover-letter-template",
+    title: "Cover Letter Template",
+    description: "Professional cover letter template for IT help desk positions",
+    content: `[Date]
+
+[Hiring Manager Name]
+[Company Name]
+[Address]
+
+Dear Hiring Manager / Dear [Specific Name],
+
+I am writing to express my strong interest in the Help Desk Technician position at [Company Name]. With my newly earned CompTIA A+ certification and passion for technology problem-solving, I am excited to contribute to your IT support team and help ensure seamless technology experiences for your users.
+
+During my CompTIA A+ training, I developed comprehensive technical skills including:
+- Hardware troubleshooting and component installation
+- Windows and macOS operating system support
+- Network connectivity and wireless configuration
+- Customer service techniques for technical support
+
+What sets me apart is my ability to communicate complex technical concepts in simple terms. In my [previous role/training], I successfully [specific example of helping someone with technology or solving a problem]. I understand that effective help desk support requires both technical expertise and excellent customer service skills.
+
+I am particularly drawn to [Company Name] because [specific reason related to company - research them first]. Your commitment to [company value/mission] aligns with my goal of providing exceptional user support while continuing to grow my technical skills.
+
+I would welcome the opportunity to discuss how my technical certification, problem-solving abilities, and dedication to customer service can contribute to your help desk team. Thank you for considering my application.
+
+Sincerely,
+[Your Name]`,
+    downloadUrl: "#"
   }
 ];
