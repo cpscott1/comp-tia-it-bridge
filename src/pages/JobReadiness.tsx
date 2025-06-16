@@ -11,7 +11,7 @@ interface ChecklistItem {
   id: string;
   title: string;
   description: string;
-  category: 'technical' | 'professional' | 'resume' | 'skills' | 'interview' | 'application';
+  category: 'technical' | 'professional' | 'resume' | 'skills' | 'interview' | 'application' | 'certification';
   priority: 'high' | 'medium' | 'low';
   estimatedTime: string;
   phase: string;
@@ -202,6 +202,98 @@ const JOB_READINESS_CHECKLIST: ChecklistItem[] = [
     estimatedTime: "1-2 hours",
     phase: "Phase 2: Skill Development (Weeks 5-8)"
   },
+  // Phase 3: Certification & Job Search (Weeks 9-12) - Certification
+  {
+    id: "cert-1",
+    title: "Schedule CompTIA A+ Core 1 exam",
+    description: "Book your CompTIA A+ Core 1 (220-1101) exam at a testing center",
+    category: 'certification',
+    priority: 'high',
+    estimatedTime: "30 minutes",
+    phase: "Phase 3: Certification & Job Search (Weeks 9-12)"
+  },
+  {
+    id: "cert-2",
+    title: "Schedule CompTIA A+ Core 2 exam",
+    description: "Book your CompTIA A+ Core 2 (220-1102) exam at a testing center",
+    category: 'certification',
+    priority: 'high',
+    estimatedTime: "30 minutes",
+    phase: "Phase 3: Certification & Job Search (Weeks 9-12)"
+  },
+  {
+    id: "cert-3",
+    title: "Take practice exams until consistently scoring 80%+",
+    description: "Complete multiple practice exams for both Core 1 and Core 2 until achieving consistent high scores",
+    category: 'certification',
+    priority: 'high',
+    estimatedTime: "10-15 hours",
+    phase: "Phase 3: Certification & Job Search (Weeks 9-12)"
+  },
+  {
+    id: "cert-4",
+    title: "Review weak areas identified in practice tests",
+    description: "Focus additional study time on topics where practice exam scores are lowest",
+    category: 'certification',
+    priority: 'high',
+    estimatedTime: "5-8 hours",
+    phase: "Phase 3: Certification & Job Search (Weeks 9-12)"
+  },
+  {
+    id: "cert-5",
+    title: "Obtain CompTIA A+ certification",
+    description: "Successfully pass both Core 1 and Core 2 exams to earn your CompTIA A+ certification",
+    category: 'certification',
+    priority: 'high',
+    estimatedTime: "4-6 hours (exam time)",
+    phase: "Phase 3: Certification & Job Search (Weeks 9-12)"
+  },
+  // Phase 3: Certification & Job Search (Weeks 9-12) - Job Search Preparation
+  {
+    id: "job-1",
+    title: "Complete resume using provided template",
+    description: "Create a polished, professional resume using one of the provided IT-focused templates",
+    category: 'application',
+    priority: 'high',
+    estimatedTime: "3-4 hours",
+    phase: "Phase 3: Certification & Job Search (Weeks 9-12)"
+  },
+  {
+    id: "job-2",
+    title: "Write compelling cover letter template",
+    description: "Develop a customizable cover letter template that highlights your IT skills and certification",
+    category: 'application',
+    priority: 'high',
+    estimatedTime: "2-3 hours",
+    phase: "Phase 3: Certification & Job Search (Weeks 9-12)"
+  },
+  {
+    id: "job-3",
+    title: "Prepare for common interview questions",
+    description: "Practice answers for typical help desk and entry-level IT interview questions",
+    category: 'interview',
+    priority: 'high',
+    estimatedTime: "3-4 hours",
+    phase: "Phase 3: Certification & Job Search (Weeks 9-12)"
+  },
+  {
+    id: "job-4",
+    title: "Practice salary negotiation techniques",
+    description: "Learn strategies for negotiating salary and benefits for entry-level IT positions",
+    category: 'interview',
+    priority: 'medium',
+    estimatedTime: "1-2 hours",
+    phase: "Phase 3: Certification & Job Search (Weeks 9-12)"
+  },
+  {
+    id: "job-5",
+    title: "Apply to 5-10 entry-level positions weekly",
+    description: "Consistently apply to help desk, desktop support, and other entry-level IT positions",
+    category: 'application',
+    priority: 'high',
+    estimatedTime: "2-3 hours weekly",
+    phase: "Phase 3: Certification & Job Search (Weeks 9-12)"
+  },
   // Original items (keeping existing functionality)
   {
     id: "resume-1",
@@ -325,6 +417,7 @@ const JobReadiness = () => {
       case 'skills': return <Briefcase className="h-4 w-4" />;
       case 'interview': return <User className="h-4 w-4" />;
       case 'application': return <ExternalLink className="h-4 w-4" />;
+      case 'certification': return <CheckCircle className="h-4 w-4" />;
       default: return <CheckCircle className="h-4 w-4" />;
     }
   };
@@ -346,6 +439,7 @@ const JobReadiness = () => {
       case 'skills': return 'bg-green-100 text-green-800';
       case 'interview': return 'bg-orange-100 text-orange-800';
       case 'application': return 'bg-pink-100 text-pink-800';
+      case 'certification': return 'bg-emerald-100 text-emerald-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -451,7 +545,7 @@ const JobReadiness = () => {
           >
             All Categories
           </Button>
-          {['technical', 'professional', 'resume', 'skills', 'interview', 'application'].map((category) => (
+          {['technical', 'professional', 'certification', 'resume', 'skills', 'interview', 'application'].map((category) => (
             <Button
               key={category}
               variant={selectedCategory === category ? 'default' : 'outline'}
