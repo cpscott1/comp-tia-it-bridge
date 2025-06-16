@@ -470,5 +470,39 @@ Sample Answer: "I'd first make sure I've exhausted all the troubleshooting steps
 "How do you stay current with technology?"
 Sample Answer: "I follow several IT news websites and blogs, participate in online forums, and practice with home lab setups. I also plan to pursue additional certifications like Network+ or Security+ to expand my knowledge. I believe continuous learning is essential in IT since technology constantly evolves."`,
     downloadUrl: "#"
+  },
+  {
+    id: "salary-negotiation-guide",
+    title: "Salary Negotiation Guide",
+    description: "Research strategies and negotiation tips for entry-level IT positions",
+    content: `Salary Negotiation Guide
+
+Research Phase
+Before Any Interview:
+
+Use Glassdoor, PayScale, and Indeed to research local salary ranges
+Entry-level help desk: typically $35,000-$45,000 annually
+Factor in location, company size, and industry
+Consider total compensation: benefits, PTO, training opportunities
+
+Negotiation Strategies
+When Asked About Salary Expectations:
+
+"Based on my research and the requirements of this position, I'm looking for a salary in the range of $X to $Y, but I'm open to discussing the complete compensation package."
+Always give a range, not a specific number
+Be prepared to justify your range with market research
+
+If Offered Below Expectations:
+
+"Thank you for the offer. I'm very excited about this opportunity. Based on my research and qualifications, I was hoping for something closer to $X. Is there flexibility in the salary range?"
+Emphasize your value: certification, eagerness to learn, customer service skills
+
+Non-Salary Negotiations:
+
+Additional PTO days
+Flexible work arrangements
+Professional development/training budget
+Earlier performance review for potential raise`,
+    downloadUrl: "#"
   }
 ];
