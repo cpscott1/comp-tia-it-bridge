@@ -27,7 +27,14 @@ interface StudentData {
   created_at: string;
   current_week?: number;
   completed_weeks?: number[];
-  quiz_attempts?: any[];
+  quiz_attempts?: {
+    score: number;
+    total_questions: number;
+    completed_at: string;
+    quiz_topics: {
+      name: string;
+    };
+  }[];
 }
 
 const InstructorDashboard = () => {
@@ -38,37 +45,68 @@ const InstructorDashboard = () => {
     queryKey: ['students'],
     queryFn: async () => {
       console.log('Fetching students...');
-      const { data, error } = await supabase
+      
+      // First get all student profiles
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select(`
-          id,
-          first_name,
-          last_name,
-          email,
-          created_at,
-          user_week_progress (
-            current_week,
-            completed_weeks
-          ),
-          quiz_attempts (
-            score,
-            total_questions,
-            completed_at,
-            quiz_topics (
-              name
-            )
-          )
-        `)
+        .select('id, first_name, last_name, email, created_at')
         .eq('role', 'student')
         .order('created_at', { ascending: false });
       
-      if (error) {
-        console.error('Error fetching students:', error);
-        throw error;
+      if (profilesError) {
+        console.error('Error fetching student profiles:', profilesError);
+        throw profilesError;
       }
-      
-      console.log('Fetched students:', data);
-      return data as StudentData[];
+
+      if (!profiles || profiles.length === 0) {
+        console.log('No students found');
+        return [];
+      }
+
+      // Get week progress for all students
+      const { data: weekProgress, error: weekError } = await supabase
+        .from('user_week_progress')
+        .select('user_id, current_week, completed_weeks')
+        .in('user_id', profiles.map(p => p.id));
+
+      if (weekError) {
+        console.error('Error fetching week progress:', weekError);
+      }
+
+      // Get quiz attempts for all students
+      const { data: quizAttempts, error: quizError } = await supabase
+        .from('quiz_attempts')
+        .select(`
+          user_id,
+          score,
+          total_questions,
+          completed_at,
+          quiz_topics (
+            name
+          )
+        `)
+        .in('user_id', profiles.map(p => p.id))
+        .order('completed_at', { ascending: false });
+
+      if (quizError) {
+        console.error('Error fetching quiz attempts:', quizError);
+      }
+
+      // Combine the data
+      const studentsWithData: StudentData[] = profiles.map(profile => {
+        const userWeekProgress = weekProgress?.find(wp => wp.user_id === profile.id);
+        const userQuizAttempts = quizAttempts?.filter(qa => qa.user_id === profile.id) || [];
+
+        return {
+          ...profile,
+          current_week: userWeekProgress?.current_week || 1,
+          completed_weeks: userWeekProgress?.completed_weeks || [],
+          quiz_attempts: userQuizAttempts
+        };
+      });
+
+      console.log('Fetched students with data:', studentsWithData);
+      return studentsWithData;
     },
   });
 
@@ -77,7 +115,7 @@ const InstructorDashboard = () => {
     totalStudents: students?.length || 0,
     averageProgress: students?.length ? 
       Math.round(students.reduce((acc, student) => {
-        const completedWeeks = student.user_week_progress?.[0]?.completed_weeks?.length || 0;
+        const completedWeeks = student.completed_weeks?.length || 0;
         return acc + (completedWeeks / 2 * 100); // Assuming 2 weeks total
       }, 0) / students.length) : 0,
     activeThisWeek: students?.filter(student => {
@@ -87,7 +125,7 @@ const InstructorDashboard = () => {
       return daysSince <= 7;
     }).length || 0,
     atRiskStudents: students?.filter(student => {
-      const completedWeeks = student.user_week_progress?.[0]?.completed_weeks?.length || 0;
+      const completedWeeks = student.completed_weeks?.length || 0;
       return completedWeeks === 0;
     }).length || 0
   };
@@ -98,7 +136,7 @@ const InstructorDashboard = () => {
   };
 
   const getCompletionRate = (student: StudentData) => {
-    const completedWeeks = student.user_week_progress?.[0]?.completed_weeks?.length || 0;
+    const completedWeeks = student.completed_weeks?.length || 0;
     return Math.round((completedWeeks / 2) * 100); // Assuming 2 weeks total
   };
 
@@ -236,7 +274,7 @@ const InstructorDashboard = () => {
                     <TableBody>
                       {students.map((student) => {
                         const completionRate = getCompletionRate(student);
-                        const currentWeek = student.user_week_progress?.[0]?.current_week || 1;
+                        const currentWeek = student.current_week || 1;
                         const displayName = student.first_name && student.last_name 
                           ? `${student.first_name} ${student.last_name}`
                           : student.email || 'Unknown';
