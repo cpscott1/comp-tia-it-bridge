@@ -1,5 +1,4 @@
-
-import { Monitor, BookOpen, Target, TrendingUp, Brain, Users, Clock, CheckCircle, Briefcase, FileText, AlertCircle, GraduationCap } from 'lucide-react';
+import { Monitor, BookOpen, Target, TrendingUp, Brain, Users, Clock, CheckCircle, Briefcase, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -297,56 +296,6 @@ export default function Index() {
               </div>
             </CardContent>
           </Card>
-
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <FileText className="h-5 w-5 text-indigo-600" />
-                <span>Study Materials</span>
-              </CardTitle>
-              <CardDescription>
-                Download PDFs, guides, and reference materials
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span>Available Downloads</span>
-                  <span className="font-medium">3</span>
-                </div>
-                <Progress value={100} className="h-2" />
-                <Link to="/downloads">
-                  <Button className="w-full" variant="outline">
-                    View Downloads
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <GraduationCap className="h-5 w-5 text-red-600" />
-                <span>Instructor View</span>
-              </CardTitle>
-              <CardDescription>
-                Access instructor dashboard and class management
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="text-sm text-gray-600">
-                  Manage students and track class progress
-                </div>
-                <Link to="/instructor">
-                  <Button className="w-full" variant="outline">
-                    Instructor Dashboard
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         {/* This Week's Focus */}
@@ -395,11 +344,6 @@ export default function Index() {
                   <Link to="/help-desk">
                     <Button variant="outline" size="sm" className="w-full justify-start">
                       🎯 Practice Help Desk Scenarios
-                    </Button>
-                  </Link>
-                  <Link to="/downloads">
-                    <Button variant="outline" size="sm" className="w-full justify-start">
-                      📁 Download Study Materials
                     </Button>
                   </Link>
                   <Link to="/job-readiness">
