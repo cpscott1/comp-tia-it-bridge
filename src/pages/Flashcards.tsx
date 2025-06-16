@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -209,7 +208,7 @@ const Flashcards = () => {
           </div>
         ) : (
           <div className="max-w-4xl mx-auto">
-            {/* Progress Section */}
+            {/* Progress Section - Updated to show only Studied and Remaining */}
             <Card className="mb-6 bg-white/70 backdrop-blur">
               <CardContent className="p-6">
                 <div className="flex justify-between text-sm text-gray-600 mb-2">
@@ -217,14 +216,10 @@ const Flashcards = () => {
                   <span>{Math.round(progress)}% Complete</span>
                 </div>
                 <Progress value={progress} className="h-3" />
-                <div className="grid grid-cols-3 gap-4 mt-4">
+                <div className="grid grid-cols-2 gap-4 mt-4">
                   <div className="text-center p-3 bg-blue-50 rounded-lg">
                     <div className="text-xl font-bold text-blue-600">{studiedCount}</div>
                     <div className="text-sm text-gray-600">Studied</div>
-                  </div>
-                  <div className="text-center p-3 bg-green-50 rounded-lg">
-                    <div className="text-xl font-bold text-green-600">{correctCount}</div>
-                    <div className="text-sm text-gray-600">Correct</div>
                   </div>
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
                     <div className="text-xl font-bold text-gray-600">{totalCards - studiedCount}</div>
