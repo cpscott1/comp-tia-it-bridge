@@ -1,3 +1,4 @@
+
 export interface ChecklistItem {
   id: string;
   title: string;
@@ -371,6 +372,59 @@ export const RESUME_TEMPLATES = [
     id: "comptia-focused",
     title: "CompTIA A+ Focused Resume",
     description: "Highlights certification and technical skills",
+    downloadUrl: "#"
+  },
+  {
+    id: "help-desk-template",
+    title: "Entry-Level IT Help Desk Resume Template",
+    description: "Complete template with professional summary and technical skills",
+    content: `[Your Name]
+[Phone Number] | [Email Address] | [City, State] | [LinkedIn Profile]
+
+PROFESSIONAL SUMMARY
+Dedicated IT professional with CompTIA A+ certification and strong technical troubleshooting skills. Experienced in hardware/software installation, system maintenance, and customer service. Seeking to leverage technical knowledge and communication skills in a help desk support role to provide exceptional user assistance and contribute to organizational efficiency.
+
+TECHNICAL SKILLS
+- Operating Systems: Windows 10/11, macOS, Linux basics
+- Hardware: PC assembly, component installation, troubleshooting
+- Software: Microsoft Office Suite, remote support tools, ticketing systems
+- Networking: TCP/IP basics, wireless configuration, network troubleshooting
+- Customer Support: Technical communication, problem resolution, documentation
+
+CERTIFICATIONS
+- CompTIA A+ Core 1 (220-1101) - [Date]
+- CompTIA A+ Core 2 (220-1102) - [Date]
+- [Any additional certifications]
+
+RELEVANT EXPERIENCE
+[Job Title] | [Company Name] | [Dates]
+- [Quantified achievement related to problem-solving or customer service]
+- [Technical task you performed, even if not IT-related]
+- [Example of helping others with technology]
+
+[Previous Job Title] | [Company Name] | [Dates]
+- [Customer service experience]
+- [Any training or teaching experience]
+- [Working with technology in any capacity]
+
+PROJECTS & TECHNICAL EXPERIENCE
+Personal Computer Build Project
+- Researched components and assembled custom gaming PC within $1,200 budget
+- Installed operating system and configured drivers for optimal performance
+- Troubleshot compatibility issues and documented solutions
+
+Home Network Setup
+- Configured wireless router and set up secure home network for family
+- Implemented network security protocols and parental controls
+- Provided ongoing technical support for household devices
+
+EDUCATION
+[Degree] in [Field] | [School Name] | [Year]
+- Relevant coursework: [Any IT, business, or communication courses]
+
+CompTIA A+ Training Program | [Training Provider] | [Year]
+- 12-week intensive program covering hardware, software, and troubleshooting
+- Hands-on labs and real-world scenario practice`,
     downloadUrl: "#"
   }
 ];
