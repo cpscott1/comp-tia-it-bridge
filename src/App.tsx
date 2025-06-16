@@ -31,6 +31,7 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/instructor-auth" element={<InstructorAuth />} />
+            <Route path="/invitation-manager" element={<InvitationManager />} />
             <Route path="/" element={
               <ProtectedRoute>
                 <Index />
