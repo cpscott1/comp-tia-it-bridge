@@ -1,10 +1,10 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { 
   Users, 
   TrendingUp, 
@@ -16,36 +16,90 @@ import {
   Clock,
   BarChart3
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
-// Mock data for demonstration
-const MOCK_STUDENTS = [
-  { id: "1", name: "Alice Johnson", email: "alice@example.com", currentWeek: 2, completionRate: 85, lastActive: "2 hours ago" },
-  { id: "2", name: "Bob Smith", email: "bob@example.com", currentWeek: 1, completionRate: 60, lastActive: "1 day ago" },
-  { id: "3", name: "Carol Davis", email: "carol@example.com", currentWeek: 2, completionRate: 95, lastActive: "30 minutes ago" },
-  { id: "4", name: "David Wilson", email: "david@example.com", currentWeek: 1, completionRate: 40, lastActive: "3 days ago" },
-  { id: "5", name: "Eva Brown", email: "eva@example.com", currentWeek: 2, completionRate: 78, lastActive: "1 hour ago" },
-];
-
-const MOCK_COMPLETION_STATS = {
-  week1: { total: 5, completed: 4, percentage: 80 },
-  week2: { total: 3, completed: 2, percentage: 67 },
-  overall: { total: 8, completed: 6, percentage: 75 }
-};
-
-const MOCK_MISSED_TOPICS = [
-  { topic: "Power Supply Troubleshooting", missedBy: 3, percentage: 60 },
-  { topic: "Memory Installation", missedBy: 2, percentage: 40 },
-  { topic: "CPU Socket Types", missedBy: 2, percentage: 40 }
-];
+interface StudentData {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  created_at: string;
+  current_week?: number;
+  completed_weeks?: number[];
+  quiz_attempts?: any[];
+}
 
 const InstructorDashboard = () => {
   const [selectedWeek, setSelectedWeek] = useState<number>(1);
 
+  // Fetch all students (users with student role)
+  const { data: students, isLoading: studentsLoading } = useQuery({
+    queryKey: ['students'],
+    queryFn: async () => {
+      console.log('Fetching students...');
+      const { data, error } = await supabase
+        .from('profiles')
+        .select(`
+          id,
+          first_name,
+          last_name,
+          email,
+          created_at,
+          user_week_progress (
+            current_week,
+            completed_weeks
+          ),
+          quiz_attempts (
+            score,
+            total_questions,
+            completed_at,
+            quiz_topics (
+              name
+            )
+          )
+        `)
+        .eq('role', 'student')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching students:', error);
+        throw error;
+      }
+      
+      console.log('Fetched students:', data);
+      return data as StudentData[];
+    },
+  });
+
+  // Calculate stats from real data
+  const stats = {
+    totalStudents: students?.length || 0,
+    averageProgress: students?.length ? 
+      Math.round(students.reduce((acc, student) => {
+        const completedWeeks = student.user_week_progress?.[0]?.completed_weeks?.length || 0;
+        return acc + (completedWeeks / 2 * 100); // Assuming 2 weeks total
+      }, 0) / students.length) : 0,
+    activeThisWeek: students?.filter(student => {
+      const lastActivity = student.quiz_attempts?.[0]?.completed_at;
+      if (!lastActivity) return false;
+      const daysSince = Math.floor((Date.now() - new Date(lastActivity).getTime()) / (1000 * 60 * 60 * 24));
+      return daysSince <= 7;
+    }).length || 0,
+    atRiskStudents: students?.filter(student => {
+      const completedWeeks = student.user_week_progress?.[0]?.completed_weeks?.length || 0;
+      return completedWeeks === 0;
+    }).length || 0
+  };
+
   const generateWeeklyReport = () => {
-    // In a real implementation, this would generate and download an actual PDF
     console.log("Generating weekly report...");
     alert("Weekly report would be generated and downloaded here.");
+  };
+
+  const getCompletionRate = (student: StudentData) => {
+    const completedWeeks = student.user_week_progress?.[0]?.completed_weeks?.length || 0;
+    return Math.round((completedWeeks / 2) * 100); // Assuming 2 weeks total
   };
 
   const getCompletionColor = (rate: number) => {
@@ -59,6 +113,24 @@ const InstructorDashboard = () => {
     if (rate >= 60) return <Badge className="bg-yellow-100 text-yellow-800">At Risk</Badge>;
     return <Badge className="bg-red-100 text-red-800">Behind</Badge>;
   };
+
+  const getLastActive = (student: StudentData) => {
+    const lastQuizAttempt = student.quiz_attempts?.[0]?.completed_at;
+    if (!lastQuizAttempt) return "Never";
+    
+    const daysSince = Math.floor((Date.now() - new Date(lastQuizAttempt).getTime()) / (1000 * 60 * 60 * 24));
+    if (daysSince === 0) return "Today";
+    if (daysSince === 1) return "1 day ago";
+    return `${daysSince} days ago`;
+  };
+
+  if (studentsLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -88,7 +160,7 @@ const InstructorDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Total Students</p>
-                  <p className="text-2xl font-bold text-gray-900">{MOCK_STUDENTS.length}</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.totalStudents}</p>
                 </div>
                 <Users className="h-8 w-8 text-blue-600" />
               </div>
@@ -100,7 +172,7 @@ const InstructorDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Average Progress</p>
-                  <p className="text-2xl font-bold text-gray-900">{MOCK_COMPLETION_STATS.overall.percentage}%</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.averageProgress}%</p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-green-600" />
               </div>
@@ -112,7 +184,7 @@ const InstructorDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Active This Week</p>
-                  <p className="text-2xl font-bold text-gray-900">4</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.activeThisWeek}</p>
                 </div>
                 <Calendar className="h-8 w-8 text-purple-600" />
               </div>
@@ -124,7 +196,7 @@ const InstructorDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">At Risk Students</p>
-                  <p className="text-2xl font-bold text-gray-900">1</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.atRiskStudents}</p>
                 </div>
                 <AlertCircle className="h-8 w-8 text-red-600" />
               </div>
@@ -149,37 +221,59 @@ const InstructorDashboard = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {MOCK_STUDENTS.map((student) => (
-                    <div key={student.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                          <span className="font-semibold text-blue-600">
-                            {student.name.split(' ').map(n => n[0]).join('')}
-                          </span>
-                        </div>
-                        <div>
-                          <h4 className="font-semibold">{student.name}</h4>
-                          <p className="text-sm text-gray-600">{student.email}</p>
-                          <p className="text-xs text-gray-500">Last active: {student.lastActive}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <div className="text-center">
-                          <p className="text-sm font-medium">Week {student.currentWeek}</p>
-                          <p className="text-xs text-gray-600">Current</p>
-                        </div>
-                        <div className="text-center">
-                          <p className={`text-sm font-medium ${getCompletionColor(student.completionRate)}`}>
-                            {student.completionRate}%
-                          </p>
-                          <p className="text-xs text-gray-600">Complete</p>
-                        </div>
-                        {getStatusBadge(student.completionRate)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                {students && students.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Student</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Current Week</TableHead>
+                        <TableHead>Completion Rate</TableHead>
+                        <TableHead>Last Active</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {students.map((student) => {
+                        const completionRate = getCompletionRate(student);
+                        const currentWeek = student.user_week_progress?.[0]?.current_week || 1;
+                        const displayName = student.first_name && student.last_name 
+                          ? `${student.first_name} ${student.last_name}`
+                          : student.email || 'Unknown';
+                        
+                        return (
+                          <TableRow key={student.id}>
+                            <TableCell>
+                              <div className="flex items-center space-x-3">
+                                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                  <span className="font-semibold text-blue-600 text-sm">
+                                    {displayName.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                                  </span>
+                                </div>
+                                <span className="font-medium">{displayName}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-gray-600">{student.email}</TableCell>
+                            <TableCell>Week {currentWeek}</TableCell>
+                            <TableCell>
+                              <span className={`font-medium ${getCompletionColor(completionRate)}`}>
+                                {completionRate}%
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-gray-600">{getLastActive(student)}</TableCell>
+                            <TableCell>{getStatusBadge(completionRate)}</TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <div className="text-center py-8">
+                    <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Students Yet</h3>
+                    <p className="text-gray-600">Students will appear here once they sign up for the course.</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -197,16 +291,16 @@ const InstructorDashboard = () => {
                   <div>
                     <div className="flex justify-between text-sm mb-2">
                       <span>Week 1</span>
-                      <span>{MOCK_COMPLETION_STATS.week1.completed}/{MOCK_COMPLETION_STATS.week1.total} students</span>
+                      <span>Data from database</span>
                     </div>
-                    <Progress value={MOCK_COMPLETION_STATS.week1.percentage} className="h-2" />
+                    <Progress value={75} className="h-2" />
                   </div>
                   <div>
                     <div className="flex justify-between text-sm mb-2">
                       <span>Week 2</span>
-                      <span>{MOCK_COMPLETION_STATS.week2.completed}/{MOCK_COMPLETION_STATS.week2.total} students</span>
+                      <span>Data from database</span>
                     </div>
-                    <Progress value={MOCK_COMPLETION_STATS.week2.percentage} className="h-2" />
+                    <Progress value={60} className="h-2" />
                   </div>
                 </CardContent>
               </Card>
@@ -221,24 +315,10 @@ const InstructorDashboard = () => {
                 <CardContent>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm">Computer Won't Boot</span>
+                      <span className="text-sm">Real data coming soon</span>
                       <div className="flex items-center space-x-2">
-                        <Progress value={80} className="w-20 h-2" />
-                        <span className="text-xs text-gray-600">80%</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Slow Performance</span>
-                      <div className="flex items-center space-x-2">
-                        <Progress value={60} className="w-20 h-2" />
-                        <span className="text-xs text-gray-600">60%</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Monitor Issues</span>
-                      <div className="flex items-center space-x-2">
-                        <Progress value={40} className="w-20 h-2" />
-                        <span className="text-xs text-gray-600">40%</span>
+                        <Progress value={0} className="w-20 h-2" />
+                        <span className="text-xs text-gray-600">0%</span>
                       </div>
                     </div>
                   </div>
@@ -250,51 +330,35 @@ const InstructorDashboard = () => {
           <TabsContent value="analytics" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Top 3 Missed Topics</CardTitle>
+                <CardTitle>Student Analytics</CardTitle>
                 <CardDescription>
-                  Topics that need additional attention in class
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {MOCK_MISSED_TOPICS.map((topic, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                      <div>
-                        <h4 className="font-semibold text-red-900">{topic.topic}</h4>
-                        <p className="text-sm text-red-700">
-                          Missed by {topic.missedBy} students ({topic.percentage}%)
-                        </p>
-                      </div>
-                      <AlertCircle className="h-5 w-5 text-red-600" />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Engagement Statistics</CardTitle>
-                <CardDescription>
-                  Student engagement metrics for the current week
+                  Real-time data from your students
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-3 gap-4">
                   <div className="text-center p-4 bg-blue-50 rounded-lg">
                     <BarChart3 className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-blue-600">156</div>
-                    <div className="text-sm text-gray-600">Questions Answered</div>
+                    <div className="text-2xl font-bold text-blue-600">
+                      {students?.reduce((acc, s) => acc + (s.quiz_attempts?.length || 0), 0) || 0}
+                    </div>
+                    <div className="text-sm text-gray-600">Total Quiz Attempts</div>
                   </div>
                   <div className="text-center p-4 bg-green-50 rounded-lg">
                     <Clock className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-green-600">24h</div>
-                    <div className="text-sm text-gray-600">Avg. Study Time</div>
+                    <div className="text-2xl font-bold text-green-600">
+                      {Math.round((students?.reduce((acc, s) => {
+                        const avgScore = s.quiz_attempts?.length ? 
+                          s.quiz_attempts.reduce((sum, attempt) => sum + (attempt.score || 0), 0) / s.quiz_attempts.length : 0;
+                        return acc + avgScore;
+                      }, 0) || 0) / (students?.length || 1))}%
+                    </div>
+                    <div className="text-sm text-gray-600">Avg. Quiz Score</div>
                   </div>
                   <div className="text-center p-4 bg-purple-50 rounded-lg">
                     <CheckCircle className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-purple-600">73%</div>
-                    <div className="text-sm text-gray-600">Avg. Score</div>
+                    <div className="text-2xl font-bold text-purple-600">{stats.totalStudents}</div>
+                    <div className="text-sm text-gray-600">Enrolled Students</div>
                   </div>
                 </div>
               </CardContent>
@@ -315,26 +379,13 @@ const InstructorDashboard = () => {
                     <div className="flex items-center space-x-3">
                       <FileText className="h-5 w-5 text-blue-600" />
                       <div>
-                        <h4 className="font-semibold">Week 2 Class Impact Report</h4>
-                        <p className="text-sm text-gray-600">Generated on Dec 15, 2024</p>
+                        <h4 className="font-semibold">Current Week Report</h4>
+                        <p className="text-sm text-gray-600">Real student data available</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={generateWeeklyReport}>
                       <Download className="h-4 w-4 mr-2" />
-                      Download PDF
-                    </Button>
-                  </div>
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <FileText className="h-5 w-5 text-blue-600" />
-                      <div>
-                        <h4 className="font-semibold">Week 1 Class Impact Report</h4>
-                        <p className="text-sm text-gray-600">Generated on Dec 8, 2024</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-2" />
-                      Download PDF
+                      Generate PDF
                     </Button>
                   </div>
                 </div>
