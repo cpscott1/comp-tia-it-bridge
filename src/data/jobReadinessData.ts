@@ -443,5 +443,28 @@ I would welcome the opportunity to discuss how my technical certification, probl
 Sincerely,
 [Your Name]`,
     downloadUrl: "#"
+  },
+  {
+    id: "interview-guide",
+    title: "Interview Preparation Guide",
+    description: "Common Help Desk Interview Questions & Answers",
+    content: `Interview Preparation Guide
+Common Help Desk Interview Questions & Answers
+
+"Tell me about yourself."
+Sample Answer: "I'm a recently certified CompTIA A+ professional with a strong passion for technology and helping others. I completed an intensive 12-week training program where I learned hardware troubleshooting, operating system support, and customer service techniques. I enjoy problem-solving and have experience explaining technical concepts to non-technical users. I'm looking for an opportunity to start my IT career in a help desk role where I can apply my certification knowledge while continuing to learn and grow."
+
+"Why do you want to work in IT support?"
+Sample Answer: "I've always been the person friends and family call when they have technology problems. I enjoy the challenge of diagnosing issues and the satisfaction of finding solutions. I earned my CompTIA A+ certification because I want to turn this natural ability into a professional career. Help desk work appeals to me because it combines technical problem-solving with helping people, and it provides a great foundation for growing in the IT field."
+
+"How would you help a frustrated customer who can't access their email?"
+Sample Answer: "First, I'd listen carefully and acknowledge their frustration to show I understand how important email access is to their work. Then I'd ask specific questions to gather information: when did the problem start, what error messages they're seeing, and what they were doing when it occurred. I'd walk them through basic troubleshooting steps like checking their internet connection and trying to access email from a different device. Throughout the process, I'd explain what we're doing and why, keeping them informed and involved in the solution."
+
+"What would you do if you couldn't solve a customer's problem?"
+Sample Answer: "I'd first make sure I've exhausted all the troubleshooting steps within my knowledge and authority. If I still can't resolve the issue, I'd escalate it to a senior technician or my supervisor, but I'd make sure to document everything I've already tried so the next person doesn't repeat the same steps. I'd also follow up with the customer to ensure their issue was resolved and they're satisfied with the outcome."
+
+"How do you stay current with technology?"
+Sample Answer: "I follow several IT news websites and blogs, participate in online forums, and practice with home lab setups. I also plan to pursue additional certifications like Network+ or Security+ to expand my knowledge. I believe continuous learning is essential in IT since technology constantly evolves."`,
+    downloadUrl: "#"
   }
 ];
