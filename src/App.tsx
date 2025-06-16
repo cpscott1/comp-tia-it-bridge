@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { InstructorProtectedRoute } from "@/components/InstructorProtectedRoute";
 import Index from "./pages/Index";
 import Practice from "./pages/Practice";
 import Flashcards from "./pages/Flashcards";
@@ -14,6 +15,7 @@ import JobReadiness from "./pages/JobReadiness";
 import Downloads from "./pages/Downloads";
 import InstructorDashboard from "./pages/InstructorDashboard";
 import Auth from "./pages/Auth";
+import InstructorAuth from "./pages/InstructorAuth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +29,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/instructor-auth" element={<InstructorAuth />} />
             <Route path="/" element={
               <ProtectedRoute>
                 <Index />
@@ -58,9 +61,9 @@ const App = () => (
               </ProtectedRoute>
             } />
             <Route path="/instructor" element={
-              <ProtectedRoute>
+              <InstructorProtectedRoute>
                 <InstructorDashboard />
-              </ProtectedRoute>
+              </InstructorProtectedRoute>
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

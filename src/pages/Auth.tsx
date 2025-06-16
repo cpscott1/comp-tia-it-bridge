@@ -236,6 +236,16 @@ export default function Auth() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        <div className="text-center pt-4 border-t">
+          <Button 
+            variant="outline" 
+            onClick={() => window.location.href = '/instructor-auth'}
+            className="w-full"
+          >
+            Instructor Login
+          </Button>
+        </div>
       </div>
     </div>
   );
