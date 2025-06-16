@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +15,8 @@ import {
   AlertCircle,
   CheckCircle,
   Clock,
-  BarChart3
+  BarChart3,
+  MessageSquare
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,6 +37,17 @@ interface StudentData {
       name: string;
     };
   }[];
+}
+
+interface DocumentationSubmission {
+  id: string;
+  user_id: string;
+  scenario_id: string;
+  scenario_title: string;
+  documentation: string;
+  submitted_at: string;
+  student_name?: string;
+  student_email?: string;
 }
 
 const InstructorDashboard = () => {
@@ -110,6 +123,53 @@ const InstructorDashboard = () => {
     },
   });
 
+  // Fetch documentation submissions
+  const { data: documentationSubmissions, isLoading: documentationLoading } = useQuery({
+    queryKey: ['documentation-submissions'],
+    queryFn: async () => {
+      console.log('Fetching documentation submissions...');
+      
+      const { data: submissions, error } = await supabase
+        .from('documentation_submissions')
+        .select('*')
+        .order('submitted_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching documentation submissions:', error);
+        throw error;
+      }
+
+      // Get student profiles for the submissions
+      if (submissions && submissions.length > 0) {
+        const userIds = [...new Set(submissions.map(s => s.user_id))];
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, email')
+          .in('id', userIds);
+
+        if (profilesError) {
+          console.error('Error fetching student profiles for submissions:', profilesError);
+        }
+
+        // Combine submissions with student data
+        const submissionsWithStudentData: DocumentationSubmission[] = submissions.map(submission => {
+          const student = profiles?.find(p => p.id === submission.user_id);
+          return {
+            ...submission,
+            student_name: student?.first_name && student?.last_name 
+              ? `${student.first_name} ${student.last_name}`
+              : student?.email || 'Unknown Student',
+            student_email: student?.email
+          };
+        });
+
+        return submissionsWithStudentData;
+      }
+
+      return submissions as DocumentationSubmission[] || [];
+    },
+  });
+
   // Calculate stats from real data
   const stats = {
     totalStudents: students?.length || 0,
@@ -160,6 +220,16 @@ const InstructorDashboard = () => {
     if (daysSince === 0) return "Today";
     if (daysSince === 1) return "1 day ago";
     return `${daysSince} days ago`;
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   if (studentsLoading) {
@@ -243,8 +313,9 @@ const InstructorDashboard = () => {
         </div>
 
         <Tabs defaultValue="students" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="students">Student Management</TabsTrigger>
+            <TabsTrigger value="documentation">Documentation</TabsTrigger>
             <TabsTrigger value="progress">Progress Tracking</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="reports">Reports</TabsTrigger>
@@ -310,6 +381,61 @@ const InstructorDashboard = () => {
                     <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No Students Yet</h3>
                     <p className="text-gray-600">Students will appear here once they sign up for the course.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="documentation" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Student Documentation Submissions</CardTitle>
+                <CardDescription>
+                  Review documentation from help desk scenario practice
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {documentationLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
+                    <p className="text-gray-600 mt-2">Loading submissions...</p>
+                  </div>
+                ) : documentationSubmissions && documentationSubmissions.length > 0 ? (
+                  <div className="space-y-4">
+                    {documentationSubmissions.map((submission) => (
+                      <Card key={submission.id} className="border-l-4 border-l-blue-500">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <CardTitle className="text-lg flex items-center space-x-2">
+                                <MessageSquare className="h-5 w-5 text-blue-600" />
+                                <span>{submission.scenario_title}</span>
+                              </CardTitle>
+                              <CardDescription>
+                                Submitted by {submission.student_name} • {formatDate(submission.submitted_at)}
+                              </CardDescription>
+                            </div>
+                            <Badge variant="outline">{submission.scenario_id}</Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-semibold text-gray-900 mb-2">Documentation:</h4>
+                            <p className="text-gray-700 whitespace-pre-wrap">{submission.documentation}</p>
+                          </div>
+                          {submission.student_email && (
+                            <p className="text-sm text-gray-500 mt-2">Student email: {submission.student_email}</p>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Documentation Submitted</h3>
+                    <p className="text-gray-600">Student documentation submissions will appear here.</p>
                   </div>
                 )}
               </CardContent>
