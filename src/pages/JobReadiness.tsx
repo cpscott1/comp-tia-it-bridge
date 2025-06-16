@@ -110,6 +110,98 @@ const JOB_READINESS_CHECKLIST: ChecklistItem[] = [
     estimatedTime: "30 minutes daily",
     phase: "Phase 1: Foundation Building (Weeks 1-4)"
   },
+  // Phase 2: Skill Development (Weeks 5-8) - Technical Skills
+  {
+    id: "tech-6",
+    title: "Complete CompTIA A+ Core 2 study materials",
+    description: "Finish all assigned reading and practice materials for Core 2 certification",
+    category: 'technical',
+    priority: 'high',
+    estimatedTime: "25-35 hours",
+    phase: "Phase 2: Skill Development (Weeks 5-8)"
+  },
+  {
+    id: "tech-7",
+    title: "Practice operating system troubleshooting",
+    description: "Work through Windows, macOS, and Linux troubleshooting scenarios",
+    category: 'technical',
+    priority: 'high',
+    estimatedTime: "8-10 hours",
+    phase: "Phase 2: Skill Development (Weeks 5-8)"
+  },
+  {
+    id: "tech-8",
+    title: "Learn ticketing system basics (ServiceNow, Zendesk)",
+    description: "Understand how to create, update, and manage IT support tickets",
+    category: 'technical',
+    priority: 'high',
+    estimatedTime: "3-4 hours",
+    phase: "Phase 2: Skill Development (Weeks 5-8)"
+  },
+  {
+    id: "tech-9",
+    title: "Understand remote support tools",
+    description: "Learn to use remote desktop, VNC, and other remote assistance tools",
+    category: 'technical',
+    priority: 'medium',
+    estimatedTime: "2-3 hours",
+    phase: "Phase 2: Skill Development (Weeks 5-8)"
+  },
+  {
+    id: "tech-10",
+    title: "Practice documentation and reporting",
+    description: "Learn to write clear, concise technical documentation and incident reports",
+    category: 'technical',
+    priority: 'high',
+    estimatedTime: "3-4 hours",
+    phase: "Phase 2: Skill Development (Weeks 5-8)"
+  },
+  // Phase 2: Skill Development (Weeks 5-8) - Soft Skills
+  {
+    id: "skills-3",
+    title: "Develop active listening techniques",
+    description: "Practice listening skills to better understand user problems and concerns",
+    category: 'skills',
+    priority: 'high',
+    estimatedTime: "2-3 hours",
+    phase: "Phase 2: Skill Development (Weeks 5-8)"
+  },
+  {
+    id: "skills-4",
+    title: "Practice explaining technical concepts simply",
+    description: "Learn to communicate complex IT issues in user-friendly language",
+    category: 'skills',
+    priority: 'high',
+    estimatedTime: "2-3 hours",
+    phase: "Phase 2: Skill Development (Weeks 5-8)"
+  },
+  {
+    id: "skills-5",
+    title: "Learn conflict resolution basics",
+    description: "Develop skills to handle frustrated users and difficult situations",
+    category: 'skills',
+    priority: 'medium',
+    estimatedTime: "1-2 hours",
+    phase: "Phase 2: Skill Development (Weeks 5-8)"
+  },
+  {
+    id: "skills-6",
+    title: "Improve written communication skills",
+    description: "Practice writing professional emails and clear technical instructions",
+    category: 'skills',
+    priority: 'medium',
+    estimatedTime: "2-3 hours",
+    phase: "Phase 2: Skill Development (Weeks 5-8)"
+  },
+  {
+    id: "skills-7",
+    title: "Practice time management and prioritization",
+    description: "Learn to manage multiple tickets and prioritize urgent vs non-urgent issues",
+    category: 'skills',
+    priority: 'medium',
+    estimatedTime: "1-2 hours",
+    phase: "Phase 2: Skill Development (Weeks 5-8)"
+  },
   // Original items (keeping existing functionality)
   {
     id: "resume-1",
