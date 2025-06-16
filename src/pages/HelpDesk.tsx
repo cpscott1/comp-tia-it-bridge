@@ -1,13 +1,14 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Monitor, CheckCircle, FileText, AlertCircle } from "lucide-react";
+import { ArrowLeft, Monitor, CheckCircle, FileText, AlertCircle, Send } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useWeekProgress } from "@/hooks/useWeekProgress";
 import { Textarea } from "@/components/ui/textarea";
+import { useSubmitDocumentation } from "@/hooks/useDocumentationSubmissions";
+import { useToast } from "@/hooks/use-toast";
 
 interface HelpDeskScenario {
   id: string;
@@ -112,6 +113,10 @@ const HelpDesk = () => {
   const [showResult, setShowResult] = useState(false);
   const [documentation, setDocumentation] = useState("");
   const [completedScenarios, setCompletedScenarios] = useState<string[]>([]);
+  const [isSubmittingDoc, setIsSubmittingDoc] = useState(false);
+
+  const submitDocumentation = useSubmitDocumentation();
+  const { toast } = useToast();
 
   const availableScenarios = HELP_DESK_SCENARIOS.filter(scenario => scenario.week <= currentWeek);
   const completedCount = completedScenarios.length;
@@ -134,6 +139,42 @@ const HelpDesk = () => {
       if (!completedScenarios.includes(selectedScenario.id)) {
         setCompletedScenarios([...completedScenarios, selectedScenario.id]);
       }
+    }
+  };
+
+  const handleSubmitDocumentation = async () => {
+    if (!selectedScenario || !documentation.trim()) {
+      toast({
+        title: "Documentation required",
+        description: "Please write some documentation before submitting.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSubmittingDoc(true);
+    try {
+      await submitDocumentation.mutateAsync({
+        scenario_id: selectedScenario.id,
+        scenario_title: selectedScenario.title,
+        documentation: documentation.trim()
+      });
+
+      toast({
+        title: "Documentation submitted!",
+        description: "Your documentation has been sent to the instructor for review.",
+      });
+
+      setDocumentation("");
+    } catch (error) {
+      console.error('Error submitting documentation:', error);
+      toast({
+        title: "Submission failed",
+        description: "There was an error submitting your documentation. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmittingDoc(false);
     }
   };
 
@@ -252,16 +293,25 @@ const HelpDesk = () => {
                     <CardHeader>
                       <CardTitle className="text-lg">Documentation Practice</CardTitle>
                       <CardDescription>
-                        How would you document this issue and resolution? (Optional)
+                        Document this issue and your resolution process for instructor review
                       </CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="space-y-4">
                       <Textarea
                         placeholder="Describe the issue, steps taken, and resolution..."
                         value={documentation}
                         onChange={(e) => setDocumentation(e.target.value)}
                         className="min-h-[100px]"
                       />
+                      <div className="flex justify-end">
+                        <Button 
+                          onClick={handleSubmitDocumentation}
+                          disabled={!documentation.trim() || isSubmittingDoc}
+                        >
+                          <Send className="h-4 w-4 mr-2" />
+                          {isSubmittingDoc ? 'Submitting...' : 'Submit to Instructor'}
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 </div>
