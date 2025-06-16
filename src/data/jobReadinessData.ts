@@ -504,5 +504,47 @@ Flexible work arrangements
 Professional development/training budget
 Earlier performance review for potential raise`,
     downloadUrl: "#"
+  },
+  {
+    id: "job-search-strategy",
+    title: "Job Search Strategy",
+    description: "Comprehensive guide for finding and applying to entry-level IT positions",
+    content: `Job Search Strategy
+
+Target Job Titles to Search For:
+
+Help Desk Technician
+IT Support Specialist
+Desktop Support Technician
+Technical Support Representative
+Field Service Technician
+Computer Support Specialist
+IT Helpdesk Analyst
+Junior System Administrator
+
+Where to Look:
+Job Boards:
+
+Indeed, LinkedIn Jobs, Glassdoor
+Dice (IT-specific)
+CompTIA Job Board
+Local government websites
+Company websites directly
+
+Networking:
+
+LinkedIn connections with local IT professionals
+Local IT meetups and user groups
+Career fairs and job expos
+Alumni networks from training programs
+
+Application Strategy:
+
+Apply to 5-10 positions per week
+Customize resume and cover letter for each application
+Follow up after 1 week if no response
+Track applications in a spreadsheet
+Practice interviewing for positions you're less interested in first`,
+    downloadUrl: "#"
   }
 ];
