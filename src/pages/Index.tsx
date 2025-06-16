@@ -1,3 +1,4 @@
+
 import { Monitor, BookOpen, Target, TrendingUp, Brain, Users, Clock, CheckCircle, Briefcase, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +11,7 @@ import { useUserQuizAttempts } from '@/hooks/useQuizAttempts';
 import { usePracticeQuestions } from '@/hooks/usePracticeQuestions';
 import { useWeekProgress } from '@/hooks/useWeekProgress';
 import { WeekSelector } from '@/components/WeekSelector';
+import { JOB_READINESS_CHECKLIST } from '@/data/jobReadinessData';
 import { useState } from 'react';
 
 // Week structure for CompTIA A+ course
@@ -106,6 +108,9 @@ export default function Index() {
   };
 
   const weekObjectives = getWeekObjectives(currentWeek);
+
+  // Get total job readiness checklist items
+  const totalJobReadinessItems = JOB_READINESS_CHECKLIST.length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -285,7 +290,7 @@ export default function Index() {
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span>Checklist Items</span>
-                  <span className="font-medium">8</span>
+                  <span className="font-medium">{totalJobReadinessItems}</span>
                 </div>
                 <Progress value={0} className="h-2" />
                 <Link to="/job-readiness">
