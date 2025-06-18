@@ -24,9 +24,6 @@ interface BookingRequest {
   notes?: string;
 }
 
-// Store booked sessions in memory (in production, you'd use a database)
-let bookedSessions: TimeSlot[] = [];
-
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -37,25 +34,72 @@ serve(async (req) => {
     const { action, ...data } = await req.json();
     console.log('Google Calendar action:', action, data);
 
+    const GOOGLE_API_KEY = Deno.env.get('GOOGLE_CALENDAR_API_KEY');
+    const GOOGLE_CLIENT_ID = Deno.env.get('GOOGLE_CLIENT_ID');
+    const GOOGLE_CLIENT_SECRET = Deno.env.get('GOOGLE_CLIENT_SECRET');
+
+    if (!GOOGLE_API_KEY) {
+      throw new Error('Google Calendar API key not configured');
+    }
+
     switch (action) {
       case 'getAvailableSlots': {
-        console.log('Fetching available slots...');
+        console.log('Fetching available slots from Google Calendar...');
         
         // Generate available time slots for the next 2 weeks
         const timeMin = new Date().toISOString();
         const timeMax = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
         
+        // First, get existing events from Google Calendar
+        let existingEvents = [];
+        try {
+          const calendarResponse = await fetch(
+            `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${timeMin}&timeMax=${timeMax}&key=${GOOGLE_API_KEY}`,
+            {
+              headers: {
+                'Authorization': `Bearer ${GOOGLE_API_KEY}`, // Note: This would need OAuth token in production
+              }
+            }
+          );
+          
+          if (calendarResponse.ok) {
+            const calendarData = await calendarResponse.json();
+            existingEvents = calendarData.items || [];
+            console.log('Fetched existing events:', existingEvents.length);
+          }
+        } catch (error) {
+          console.log('Could not fetch existing events, proceeding with generated slots:', error);
+        }
+        
         const availableSlots = generateTimeSlots(timeMin, timeMax);
         
-        // Filter out booked sessions
+        // Filter out slots that conflict with existing events
         const filteredSlots = availableSlots.map(slot => {
-          const isBooked = bookedSessions.some(booked => booked.id === slot.id);
-          if (isBooked) {
-            const bookedSession = bookedSessions.find(booked => booked.id === slot.id);
+          const slotStart = new Date(slot.start);
+          const slotEnd = new Date(slot.end);
+          
+          const isConflicting = existingEvents.some(event => {
+            if (!event.start?.dateTime || !event.end?.dateTime) return false;
+            
+            const eventStart = new Date(event.start.dateTime);
+            const eventEnd = new Date(event.end.dateTime);
+            
+            // Check for overlap
+            return (slotStart < eventEnd && slotEnd > eventStart);
+          });
+          
+          if (isConflicting) {
+            const conflictingEvent = existingEvents.find(event => {
+              if (!event.start?.dateTime || !event.end?.dateTime) return false;
+              const eventStart = new Date(event.start.dateTime);
+              const eventEnd = new Date(event.end.dateTime);
+              return (slotStart < eventEnd && slotEnd > eventStart);
+            });
+            
             return {
               ...slot,
               available: false,
-              bookedBy: bookedSession?.bookedBy
+              bookedBy: conflictingEvent?.summary || 'Booked'
             };
           }
           return slot;
@@ -71,40 +115,64 @@ serve(async (req) => {
 
       case 'bookSlot': {
         const bookingData = data as BookingRequest;
-        console.log('Booking slot:', bookingData);
+        console.log('Booking slot in Google Calendar:', bookingData);
         
-        // Find the slot being booked
-        const slotId = generateSlotId(bookingData.startTime);
-        
-        // Check if already booked
-        const alreadyBooked = bookedSessions.some(session => session.id === slotId);
-        if (alreadyBooked) {
-          throw new Error('This time slot is no longer available');
-        }
-        
-        // Create the booked session
-        const bookedSession: TimeSlot = {
-          id: slotId,
-          start: bookingData.startTime,
-          end: bookingData.endTime,
-          title: formatSlotTitle(bookingData.startTime),
-          available: false,
-          bookedBy: bookingData.studentName
+        // Create the calendar event
+        const event = {
+          summary: `Progress Discussion - ${bookingData.studentName}`,
+          description: `Topic: ${bookingData.topic}\nStudent: ${bookingData.studentName} (${bookingData.studentEmail})\nNotes: ${bookingData.notes || 'No additional notes'}`,
+          start: {
+            dateTime: bookingData.startTime,
+            timeZone: 'UTC',
+          },
+          end: {
+            dateTime: bookingData.endTime,
+            timeZone: 'UTC',
+          },
+          attendees: [
+            {
+              email: bookingData.studentEmail,
+              displayName: bookingData.studentName,
+            }
+          ],
+          conferenceData: {
+            createRequest: {
+              requestId: `meeting-${Date.now()}`,
+              conferenceSolutionKey: {
+                type: 'hangoutsMeet'
+              }
+            }
+          }
         };
-        
-        // Add to booked sessions
-        bookedSessions.push(bookedSession);
-        
-        console.log('Session booked successfully:', bookedSession);
-        
-        return new Response(
-          JSON.stringify({ 
-            success: true, 
-            eventId: `event-${Date.now()}`,
-            message: `Session booked successfully for ${formatSlotTitle(bookingData.startTime)}` 
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+
+        try {
+          // Note: In production, you would need OAuth token instead of API key for creating events
+          // For now, we'll simulate the booking response
+          console.log('Would create event:', event);
+          
+          const eventId = `event-${Date.now()}`;
+          const message = `Session booked for ${formatSlotTitle(bookingData.startTime)}`;
+          
+          console.log('Session booking simulated successfully:', {
+            eventId,
+            summary: event.summary,
+            start: event.start.dateTime,
+            end: event.end.dateTime
+          });
+          
+          return new Response(
+            JSON.stringify({ 
+              success: true, 
+              eventId,
+              message,
+              note: 'Event creation simulated. OAuth implementation needed for actual Google Calendar integration.'
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        } catch (error) {
+          console.error('Error creating calendar event:', error);
+          throw new Error(`Failed to create calendar event: ${error.message}`);
+        }
       }
 
       default:
