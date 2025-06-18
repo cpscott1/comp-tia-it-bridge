@@ -24,15 +24,123 @@ interface BookingData {
 export const useGoogleCalendar = () => {
   const [loading, setLoading] = useState(false);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
   const { toast } = useToast();
 
+  const getGoogleAuthUrl = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('google-calendar', {
+        body: { action: 'getAuthUrl' }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        return data.authUrl;
+      } else {
+        throw new Error(data.error || 'Failed to get auth URL');
+      }
+    } catch (error) {
+      console.error('Error getting auth URL:', error);
+      toast({
+        title: "Error",
+        description: "Failed to get Google authorization URL",
+        variant: "destructive",
+      });
+      return null;
+    }
+  };
+
+  const handleOAuthCallback = async (code: string) => {
+    setLoading(true);
+    try {
+      const redirectUri = `${window.location.origin}/calendar/oauth-callback`;
+      
+      const { data, error } = await supabase.functions.invoke('google-calendar', {
+        body: { 
+          action: 'exchangeCode',
+          code,
+          redirectUri
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        setAccessToken(data.tokens.access_token);
+        setIsAuthenticated(true);
+        
+        // Store tokens in localStorage for persistence
+        localStorage.setItem('google_access_token', data.tokens.access_token);
+        if (data.tokens.refresh_token) {
+          localStorage.setItem('google_refresh_token', data.tokens.refresh_token);
+        }
+        
+        toast({
+          title: "Connected!",
+          description: "Successfully connected to Google Calendar",
+        });
+        
+        return true;
+      } else {
+        throw new Error(data.error || 'Failed to exchange code');
+      }
+    } catch (error) {
+      console.error('Error handling OAuth callback:', error);
+      toast({
+        title: "Error",
+        description: "Failed to authenticate with Google Calendar",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const checkStoredTokens = () => {
+    const storedToken = localStorage.getItem('google_access_token');
+    if (storedToken) {
+      setAccessToken(storedToken);
+      setIsAuthenticated(true);
+      return true;
+    }
+    return false;
+  };
+
+  const disconnectGoogle = () => {
+    localStorage.removeItem('google_access_token');
+    localStorage.removeItem('google_refresh_token');
+    setAccessToken(null);
+    setIsAuthenticated(false);
+    setTimeSlots([]);
+    
+    toast({
+      title: "Disconnected",
+      description: "Disconnected from Google Calendar",
+    });
+  };
+
   const fetchAvailableSlots = async () => {
+    if (!accessToken) {
+      toast({
+        title: "Not Connected",
+        description: "Please connect to Google Calendar first",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       console.log('Fetching available slots from Google Calendar...');
       
       const { data, error } = await supabase.functions.invoke('google-calendar', {
-        body: { action: 'getAvailableSlots' }
+        body: { 
+          action: 'getAvailableSlots',
+          accessToken
+        }
       });
 
       if (error) {
@@ -61,6 +169,15 @@ export const useGoogleCalendar = () => {
   };
 
   const bookSlot = async (slotId: string, bookingData: BookingData) => {
+    if (!accessToken) {
+      toast({
+        title: "Not Connected",
+        description: "Please connect to Google Calendar first",
+        variant: "destructive",
+      });
+      return { success: false };
+    }
+
     setLoading(true);
     try {
       const slot = timeSlots.find(s => s.id === slotId);
@@ -71,6 +188,7 @@ export const useGoogleCalendar = () => {
       const { data, error } = await supabase.functions.invoke('google-calendar', {
         body: {
           action: 'bookSlot',
+          accessToken,
           startTime: slot.start,
           endTime: slot.end,
           ...bookingData
@@ -94,10 +212,15 @@ export const useGoogleCalendar = () => {
 
         toast({
           title: "Booking Confirmed",
-          description: data.message || "Your session has been scheduled successfully.",
+          description: `${data.message}. Event created in your Google Calendar.`,
         });
 
-        return { success: true, eventId: data.eventId };
+        return { 
+          success: true, 
+          eventId: data.eventId,
+          eventUrl: data.eventUrl,
+          meetingUrl: data.meetingUrl
+        };
       } else {
         throw new Error(data.error || 'Failed to book session');
       }
@@ -117,6 +240,11 @@ export const useGoogleCalendar = () => {
   return {
     timeSlots,
     loading,
+    isAuthenticated,
+    getGoogleAuthUrl,
+    handleOAuthCallback,
+    checkStoredTokens,
+    disconnectGoogle,
     fetchAvailableSlots,
     bookSlot
   };

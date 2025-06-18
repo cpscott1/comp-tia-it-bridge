@@ -34,30 +34,84 @@ serve(async (req) => {
     const { action, ...data } = await req.json();
     console.log('Google Calendar action:', action, data);
 
-    const GOOGLE_API_KEY = Deno.env.get('GOOGLE_CALENDAR_API_KEY');
     const GOOGLE_CLIENT_ID = Deno.env.get('GOOGLE_CLIENT_ID');
     const GOOGLE_CLIENT_SECRET = Deno.env.get('GOOGLE_CLIENT_SECRET');
 
-    if (!GOOGLE_API_KEY) {
-      throw new Error('Google Calendar API key not configured');
+    if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
+      throw new Error('Google OAuth credentials not configured');
     }
 
     switch (action) {
+      case 'getAuthUrl': {
+        const redirectUri = `${req.headers.get('origin')}/calendar/oauth-callback`;
+        const scope = 'https://www.googleapis.com/auth/calendar';
+        
+        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+          `client_id=${GOOGLE_CLIENT_ID}&` +
+          `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+          `scope=${encodeURIComponent(scope)}&` +
+          `response_type=code&` +
+          `access_type=offline&` +
+          `prompt=consent`;
+
+        console.log('Generated auth URL:', authUrl);
+        
+        return new Response(
+          JSON.stringify({ success: true, authUrl }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      case 'exchangeCode': {
+        const { code, redirectUri } = data;
+        
+        console.log('Exchanging code for tokens...');
+        
+        const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({
+            client_id: GOOGLE_CLIENT_ID,
+            client_secret: GOOGLE_CLIENT_SECRET,
+            code,
+            grant_type: 'authorization_code',
+            redirect_uri: redirectUri,
+          }),
+        });
+
+        if (!tokenResponse.ok) {
+          const errorText = await tokenResponse.text();
+          console.error('Token exchange failed:', errorText);
+          throw new Error(`Failed to exchange code for tokens: ${errorText}`);
+        }
+
+        const tokens = await tokenResponse.json();
+        console.log('Token exchange successful');
+        
+        return new Response(
+          JSON.stringify({ success: true, tokens }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       case 'getAvailableSlots': {
+        const { accessToken } = data;
         console.log('Fetching available slots from Google Calendar...');
         
         // Generate available time slots for the next 2 weeks
         const timeMin = new Date().toISOString();
         const timeMax = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
         
-        // First, get existing events from Google Calendar
+        // Get existing events from Google Calendar
         let existingEvents = [];
         try {
           const calendarResponse = await fetch(
-            `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${timeMin}&timeMax=${timeMax}&key=${GOOGLE_API_KEY}`,
+            `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${timeMin}&timeMax=${timeMax}`,
             {
               headers: {
-                'Authorization': `Bearer ${GOOGLE_API_KEY}`, // Note: This would need OAuth token in production
+                'Authorization': `Bearer ${accessToken}`,
               }
             }
           );
@@ -66,6 +120,8 @@ serve(async (req) => {
             const calendarData = await calendarResponse.json();
             existingEvents = calendarData.items || [];
             console.log('Fetched existing events:', existingEvents.length);
+          } else {
+            console.error('Failed to fetch calendar events:', await calendarResponse.text());
           }
         } catch (error) {
           console.log('Could not fetch existing events, proceeding with generated slots:', error);
@@ -114,7 +170,7 @@ serve(async (req) => {
       }
 
       case 'bookSlot': {
-        const bookingData = data as BookingRequest;
+        const { accessToken, ...bookingData } = data as BookingRequest & { accessToken: string };
         console.log('Booking slot in Google Calendar:', bookingData);
         
         // Create the calendar event
@@ -146,26 +202,36 @@ serve(async (req) => {
         };
 
         try {
-          // Note: In production, you would need OAuth token instead of API key for creating events
-          // For now, we'll simulate the booking response
-          console.log('Would create event:', event);
+          const createResponse = await fetch(
+            'https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1',
+            {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(event),
+            }
+          );
+
+          if (!createResponse.ok) {
+            const errorText = await createResponse.text();
+            console.error('Failed to create calendar event:', errorText);
+            throw new Error(`Failed to create calendar event: ${errorText}`);
+          }
+
+          const createdEvent = await createResponse.json();
+          console.log('Calendar event created successfully:', createdEvent.id);
           
-          const eventId = `event-${Date.now()}`;
           const message = `Session booked for ${formatSlotTitle(bookingData.startTime)}`;
-          
-          console.log('Session booking simulated successfully:', {
-            eventId,
-            summary: event.summary,
-            start: event.start.dateTime,
-            end: event.end.dateTime
-          });
           
           return new Response(
             JSON.stringify({ 
               success: true, 
-              eventId,
-              message,
-              note: 'Event creation simulated. OAuth implementation needed for actual Google Calendar integration.'
+              eventId: createdEvent.id,
+              eventUrl: createdEvent.htmlLink,
+              meetingUrl: createdEvent.conferenceData?.entryPoints?.[0]?.uri,
+              message
             }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );

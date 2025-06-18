@@ -2,13 +2,15 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, User, RefreshCw } from "lucide-react";
+import { Calendar, Clock, User, RefreshCw, Link2, Unlink } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useGoogleCalendar } from "@/hooks/useGoogleCalendar";
 import { useAuth } from "@/hooks/useAuth";
+import { useSearchParams } from "react-router-dom";
 
 interface BookingFormData {
   studentName: string;
@@ -19,7 +21,18 @@ interface BookingFormData {
 
 const CalendarBooking = () => {
   const { user } = useAuth();
-  const { timeSlots, loading, fetchAvailableSlots, bookSlot } = useGoogleCalendar();
+  const [searchParams] = useSearchParams();
+  const { 
+    timeSlots, 
+    loading, 
+    isAuthenticated, 
+    getGoogleAuthUrl, 
+    checkStoredTokens, 
+    disconnectGoogle, 
+    fetchAvailableSlots, 
+    bookSlot 
+  } = useGoogleCalendar();
+  
   const [selectedSlot, setSelectedSlot] = useState<any>(null);
   const [bookingForm, setBookingForm] = useState<BookingFormData>({
     studentName: user?.user_metadata?.first_name && user?.user_metadata?.last_name 
@@ -33,8 +46,16 @@ const CalendarBooking = () => {
   const [isBooking, setIsBooking] = useState(false);
 
   useEffect(() => {
-    fetchAvailableSlots();
-  }, []);
+    // Check for stored tokens on component mount
+    const hasStoredTokens = checkStoredTokens();
+    
+    // Check for connection success in URL params
+    if (searchParams.get('connected') === 'true') {
+      if (hasStoredTokens) {
+        fetchAvailableSlots();
+      }
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     // Update form with user data when user changes
@@ -48,6 +69,13 @@ const CalendarBooking = () => {
       }));
     }
   }, [user]);
+
+  const handleConnectGoogle = async () => {
+    const authUrl = await getGoogleAuthUrl();
+    if (authUrl) {
+      window.location.href = authUrl;
+    }
+  };
 
   const handleBookSlot = async () => {
     if (!selectedSlot) return;
@@ -72,6 +100,9 @@ const CalendarBooking = () => {
       }));
       setSelectedSlot(null);
       setIsDialogOpen(false);
+      
+      // Refresh the slots to show updated availability
+      fetchAvailableSlots();
     }
     
     setIsBooking(false);
@@ -89,25 +120,56 @@ const CalendarBooking = () => {
               <Calendar className="h-5 w-5" />
               <span>Schedule Progress Discussion</span>
             </div>
-            <Button 
-              onClick={fetchAvailableSlots} 
-              disabled={loading}
-              variant="outline" 
-              size="sm"
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
+            <div className="flex space-x-2">
+              {isAuthenticated ? (
+                <>
+                  <Button 
+                    onClick={fetchAvailableSlots} 
+                    disabled={loading}
+                    variant="outline" 
+                    size="sm"
+                  >
+                    <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                    Refresh
+                  </Button>
+                  <Button 
+                    onClick={disconnectGoogle}
+                    variant="outline" 
+                    size="sm"
+                  >
+                    <Unlink className="h-4 w-4 mr-2" />
+                    Disconnect
+                  </Button>
+                </>
+              ) : (
+                <Button 
+                  onClick={handleConnectGoogle}
+                  variant="outline" 
+                  size="sm"
+                >
+                  <Link2 className="h-4 w-4 mr-2" />
+                  Connect Google Calendar
+                </Button>
+              )}
+            </div>
           </CardTitle>
           <CardDescription>
             Book a one-on-one session to discuss your weekly progress and assignments
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {loading && timeSlots.length === 0 ? (
+          {!isAuthenticated ? (
+            <Alert>
+              <Link2 className="h-4 w-4" />
+              <AlertDescription>
+                Please connect your Google Calendar to view available time slots and book sessions. 
+                This will allow you to create actual calendar events.
+              </AlertDescription>
+            </Alert>
+          ) : loading && timeSlots.length === 0 ? (
             <div className="text-center py-8">
               <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-gray-400" />
-              <p className="text-gray-600">Loading available time slots...</p>
+              <p className="text-gray-600">Loading available time slots from your Google Calendar...</p>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 gap-6">
@@ -219,7 +281,7 @@ const CalendarBooking = () => {
               <div>
                 <h4 className="font-semibold mb-3 flex items-center space-x-2">
                   <User className="h-4 w-4" />
-                  <span>Your Booked Sessions</span>
+                  <span>Booked Sessions</span>
                 </h4>
                 <div className="space-y-2 max-h-60 overflow-y-auto">
                   {bookedSlots.length > 0 ? (
