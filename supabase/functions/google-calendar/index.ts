@@ -171,7 +171,7 @@ serve(async (req) => {
 
       case 'bookSlot': {
         const { accessToken, ...bookingData } = data as BookingRequest & { accessToken: string };
-        console.log('Booking slot in Google Calendar:', bookingData);
+        console.log('Creating actual calendar event:', bookingData);
         
         // Create the calendar event
         const event = {
@@ -201,44 +201,42 @@ serve(async (req) => {
           }
         };
 
-        try {
-          const createResponse = await fetch(
-            'https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1',
-            {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(event),
-            }
-          );
-
-          if (!createResponse.ok) {
-            const errorText = await createResponse.text();
-            console.error('Failed to create calendar event:', errorText);
-            throw new Error(`Failed to create calendar event: ${errorText}`);
+        console.log('Making actual Google Calendar API call to create event...');
+        
+        const createResponse = await fetch(
+          'https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1',
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(event),
           }
+        );
 
-          const createdEvent = await createResponse.json();
-          console.log('Calendar event created successfully:', createdEvent.id);
-          
-          const message = `Session booked for ${formatSlotTitle(bookingData.startTime)}`;
-          
-          return new Response(
-            JSON.stringify({ 
-              success: true, 
-              eventId: createdEvent.id,
-              eventUrl: createdEvent.htmlLink,
-              meetingUrl: createdEvent.conferenceData?.entryPoints?.[0]?.uri,
-              message
-            }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        } catch (error) {
-          console.error('Error creating calendar event:', error);
-          throw new Error(`Failed to create calendar event: ${error.message}`);
+        if (!createResponse.ok) {
+          const errorText = await createResponse.text();
+          console.error('Failed to create calendar event:', errorText);
+          throw new Error(`Failed to create calendar event: ${errorText}`);
         }
+
+        const createdEvent = await createResponse.json();
+        console.log('SUCCESS: Real calendar event created:', createdEvent.id);
+        console.log('Event URL:', createdEvent.htmlLink);
+        
+        const message = `Session booked for ${formatSlotTitle(bookingData.startTime)}`;
+        
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            eventId: createdEvent.id,
+            eventUrl: createdEvent.htmlLink,
+            meetingUrl: createdEvent.conferenceData?.entryPoints?.[0]?.uri,
+            message
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
 
       default:
