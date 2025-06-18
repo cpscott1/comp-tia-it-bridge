@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useWeekProgress } from "@/hooks/useWeekProgress";
 import { useUserQuizAttempts } from "@/hooks/useQuizAttempts";
 import { WeekSelector } from "@/components/WeekSelector";
-import { UserMenu } from "@/components/UserMenu";
+import UserMenu from "@/components/UserMenu";
 
 const Index = () => {
   const { user } = useAuth();
@@ -45,6 +46,7 @@ const Index = () => {
   const courseWeeks = Array.from({ length: totalWeeks }, (_, i) => ({
     number: i + 1,
     title: `Week ${i + 1}`,
+    description: `CompTIA A+ fundamentals and concepts for week ${i + 1}`,
     isCompleted: completedWeeks.includes(i + 1),
     isUnlocked: i + 1 <= currentWeek
   }));
