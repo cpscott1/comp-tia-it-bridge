@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
@@ -44,7 +43,8 @@ serve(async (req) => {
     switch (action) {
       case 'getAuthUrl': {
         const redirectUri = `${req.headers.get('origin')}/calendar/oauth-callback`;
-        const scope = 'https://www.googleapis.com/auth/calendar';
+        // Updated scope to include calendar events creation
+        const scope = 'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events';
         
         const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
           `client_id=${GOOGLE_CLIENT_ID}&` +
@@ -54,7 +54,7 @@ serve(async (req) => {
           `access_type=offline&` +
           `prompt=consent`;
 
-        console.log('Generated auth URL:', authUrl);
+        console.log('Generated auth URL with calendar.events scope:', authUrl);
         
         return new Response(
           JSON.stringify({ success: true, authUrl }),
@@ -88,7 +88,7 @@ serve(async (req) => {
         }
 
         const tokens = await tokenResponse.json();
-        console.log('Token exchange successful');
+        console.log('Token exchange successful, scope:', tokens.scope);
         
         return new Response(
           JSON.stringify({ success: true, tokens }),
@@ -99,6 +99,29 @@ serve(async (req) => {
       case 'getAvailableSlots': {
         const { accessToken } = data;
         console.log('Fetching available slots from Google Calendar...');
+        
+        // Test the access token first
+        try {
+          const testResponse = await fetch(
+            'https://www.googleapis.com/calendar/v3/calendars/primary',
+            {
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+              }
+            }
+          );
+          
+          if (!testResponse.ok) {
+            const errorText = await testResponse.text();
+            console.error('Access token test failed:', testResponse.status, errorText);
+            throw new Error(`Invalid access token: ${testResponse.status} ${errorText}`);
+          }
+          
+          console.log('Access token verified successfully');
+        } catch (error) {
+          console.error('Access token verification failed:', error);
+          throw new Error('Access token verification failed');
+        }
         
         // Generate available time slots for the next 2 weeks
         const timeMin = new Date().toISOString();
@@ -121,7 +144,8 @@ serve(async (req) => {
             existingEvents = calendarData.items || [];
             console.log('Fetched existing events:', existingEvents.length);
           } else {
-            console.error('Failed to fetch calendar events:', await calendarResponse.text());
+            const errorText = await calendarResponse.text();
+            console.error('Failed to fetch calendar events:', calendarResponse.status, errorText);
           }
         } catch (error) {
           console.log('Could not fetch existing events, proceeding with generated slots:', error);
@@ -173,6 +197,27 @@ serve(async (req) => {
         const { accessToken, ...bookingData } = data as BookingRequest & { accessToken: string };
         console.log('Creating actual calendar event:', bookingData);
         
+        // Verify access token and permissions first
+        try {
+          const testResponse = await fetch(
+            'https://www.googleapis.com/calendar/v3/calendars/primary',
+            {
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+              }
+            }
+          );
+          
+          if (!testResponse.ok) {
+            const errorText = await testResponse.text();
+            console.error('Access token verification failed for booking:', testResponse.status, errorText);
+            throw new Error(`Invalid access token for booking: ${testResponse.status} ${errorText}`);
+          }
+        } catch (error) {
+          console.error('Cannot verify access token for booking:', error);
+          throw new Error('Access token verification failed for booking');
+        }
+        
         // Create the calendar event
         const event = {
           summary: `Progress Discussion - ${bookingData.studentName}`,
@@ -201,7 +246,8 @@ serve(async (req) => {
           }
         };
 
-        console.log('Making actual Google Calendar API call to create event...');
+        console.log('Making Google Calendar API call to create event...');
+        console.log('Event data:', JSON.stringify(event, null, 2));
         
         const createResponse = await fetch(
           'https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1',
@@ -217,8 +263,14 @@ serve(async (req) => {
 
         if (!createResponse.ok) {
           const errorText = await createResponse.text();
-          console.error('Failed to create calendar event:', errorText);
-          throw new Error(`Failed to create calendar event: ${errorText}`);
+          console.error('Failed to create calendar event:', createResponse.status, errorText);
+          console.error('Response headers:', createResponse.headers);
+          
+          if (createResponse.status === 403) {
+            throw new Error('Insufficient permissions to create calendar events. Please reconnect your Google account with proper calendar permissions.');
+          }
+          
+          throw new Error(`Failed to create calendar event: ${createResponse.status} ${errorText}`);
         }
 
         const createdEvent = await createResponse.json();
