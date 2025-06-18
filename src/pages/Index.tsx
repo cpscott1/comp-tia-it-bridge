@@ -41,6 +41,19 @@ const Index = () => {
     ? Math.round(recentAttempts.reduce((sum, attempt) => sum + (attempt.score / attempt.total_questions * 100), 0) / recentAttempts.length)
     : 0;
 
+  // Course weeks data for WeekSelector
+  const courseWeeks = Array.from({ length: totalWeeks }, (_, i) => ({
+    number: i + 1,
+    title: `Week ${i + 1}`,
+    isCompleted: completedWeeks.includes(i + 1),
+    isUnlocked: i + 1 <= currentWeek
+  }));
+
+  const handleWeekChange = (week: number) => {
+    // For now, just log the week selection
+    console.log('Week selected:', week);
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -138,7 +151,11 @@ const Index = () => {
 
         {/* Week Selection */}
         <div className="mb-8">
-          <WeekSelector />
+          <WeekSelector 
+            courseWeeks={courseWeeks}
+            currentWeek={currentWeek}
+            onWeekChange={handleWeekChange}
+          />
         </div>
 
         {/* Study Tools */}
