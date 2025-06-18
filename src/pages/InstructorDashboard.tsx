@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import InstructorCalendar from "@/components/calendar/InstructorCalendar";
 
 interface StudentData {
   id: string;
@@ -312,8 +313,9 @@ const InstructorDashboard = () => {
         </div>
 
         <Tabs defaultValue="students" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="students">Student Management</TabsTrigger>
+            <TabsTrigger value="calendar">Calendar & Booking</TabsTrigger>
             <TabsTrigger value="documentation">Documentation</TabsTrigger>
             <TabsTrigger value="progress">Progress Tracking</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -384,6 +386,10 @@ const InstructorDashboard = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="calendar" className="space-y-6">
+            <InstructorCalendar />
           </TabsContent>
 
           <TabsContent value="documentation" className="space-y-6">
