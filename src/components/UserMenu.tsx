@@ -61,3 +61,5 @@ export function UserMenu() {
     </DropdownMenu>
   );
 }
+
+export default UserMenu;

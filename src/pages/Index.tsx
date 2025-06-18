@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -22,14 +21,14 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useWeekProgress } from "@/hooks/useWeekProgress";
-import { useQuizAttempts } from "@/hooks/useQuizAttempts";
-import WeekSelector from "@/components/WeekSelector";
-import UserMenu from "@/components/UserMenu";
+import { useUserQuizAttempts } from "@/hooks/useQuizAttempts";
+import { WeekSelector } from "@/components/WeekSelector";
+import { UserMenu } from "@/components/UserMenu";
 
 const Index = () => {
   const { user } = useAuth();
-  const { weekProgress } = useWeekProgress();
-  const { attempts } = useQuizAttempts();
+  const { data: weekProgress } = useWeekProgress();
+  const { data: attempts } = useUserQuizAttempts();
 
   const currentWeek = weekProgress?.current_week || 1;
   const completedWeeks = weekProgress?.completed_weeks || [];

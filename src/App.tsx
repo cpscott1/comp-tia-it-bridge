@@ -14,8 +14,8 @@ import Downloads from "./pages/Downloads";
 import HelpDesk from "./pages/HelpDesk";
 import CalendarBooking from "./pages/CalendarBooking";
 import NotFound from "./pages/NotFound";
-import ProtectedRoute from "./components/ProtectedRoute";
-import InstructorProtectedRoute from "./components/InstructorProtectedRoute";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { InstructorProtectedRoute } from "./components/InstructorProtectedRoute";
 
 const queryClient = new QueryClient();
 
