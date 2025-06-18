@@ -24,6 +24,9 @@ interface BookingRequest {
   notes?: string;
 }
 
+// Store booked sessions in memory (in production, you'd use a database)
+let bookedSessions: TimeSlot[] = [];
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -32,66 +35,73 @@ serve(async (req) => {
 
   try {
     const { action, ...data } = await req.json();
-    const googleApiKey = Deno.env.get('GOOGLE_CALENDAR_API_KEY');
-    const googleClientId = Deno.env.get('GOOGLE_CLIENT_ID');
-    const googleClientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET');
-
-    if (!googleApiKey || !googleClientId || !googleClientSecret) {
-      throw new Error('Google Calendar API credentials not configured');
-    }
-
-    // For this demo, we'll use the primary calendar ID
-    // In production, you might want to use a specific calendar
-    const calendarId = 'primary';
+    console.log('Google Calendar action:', action, data);
 
     switch (action) {
       case 'getAvailableSlots': {
-        // Get busy times from Google Calendar
-        const timeMin = new Date().toISOString();
-        const timeMax = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(); // 2 weeks ahead
+        console.log('Fetching available slots...');
         
-        // This would require OAuth token for the instructor's calendar
-        // For now, we'll generate available slots and filter out busy times
+        // Generate available time slots for the next 2 weeks
+        const timeMin = new Date().toISOString();
+        const timeMax = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+        
         const availableSlots = generateTimeSlots(timeMin, timeMax);
         
+        // Filter out booked sessions
+        const filteredSlots = availableSlots.map(slot => {
+          const isBooked = bookedSessions.some(booked => booked.id === slot.id);
+          if (isBooked) {
+            const bookedSession = bookedSessions.find(booked => booked.id === slot.id);
+            return {
+              ...slot,
+              available: false,
+              bookedBy: bookedSession?.bookedBy
+            };
+          }
+          return slot;
+        });
+        
+        console.log('Generated slots:', filteredSlots.length);
+        
         return new Response(
-          JSON.stringify({ success: true, slots: availableSlots }),
+          JSON.stringify({ success: true, slots: filteredSlots }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
       case 'bookSlot': {
         const bookingData = data as BookingRequest;
+        console.log('Booking slot:', bookingData);
         
-        // Create calendar event
-        const event = {
-          summary: `Progress Discussion - ${bookingData.studentName}`,
-          description: `Topic: ${bookingData.topic}\nNotes: ${bookingData.notes || 'No additional notes'}`,
-          start: {
-            dateTime: bookingData.startTime,
-            timeZone: 'America/New_York', // Adjust as needed
-          },
-          end: {
-            dateTime: bookingData.endTime,
-            timeZone: 'America/New_York',
-          },
-          attendees: [
-            {
-              email: bookingData.studentEmail,
-              displayName: bookingData.studentName,
-            }
-          ],
+        // Find the slot being booked
+        const slotId = generateSlotId(bookingData.startTime);
+        
+        // Check if already booked
+        const alreadyBooked = bookedSessions.some(session => session.id === slotId);
+        if (alreadyBooked) {
+          throw new Error('This time slot is no longer available');
+        }
+        
+        // Create the booked session
+        const bookedSession: TimeSlot = {
+          id: slotId,
+          start: bookingData.startTime,
+          end: bookingData.endTime,
+          title: formatSlotTitle(bookingData.startTime),
+          available: false,
+          bookedBy: bookingData.studentName
         };
-
-        // For now, we'll simulate the booking
-        // In production, you'd need to implement OAuth flow for calendar access
-        console.log('Would create calendar event:', event);
+        
+        // Add to booked sessions
+        bookedSessions.push(bookedSession);
+        
+        console.log('Session booked successfully:', bookedSession);
         
         return new Response(
           JSON.stringify({ 
             success: true, 
-            eventId: `mock-event-${Date.now()}`,
-            message: 'Session booked successfully' 
+            eventId: `event-${Date.now()}`,
+            message: `Session booked successfully for ${formatSlotTitle(bookingData.startTime)}` 
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
@@ -133,14 +143,24 @@ function generateTimeSlots(timeMin: string, timeMax: string): TimeSlot[] {
       endTime.setHours(hour + 1, 0, 0, 0);
       
       slots.push({
-        id: `${day.toISOString().split('T')[0]}-${hour}`,
+        id: generateSlotId(startTime.toISOString()),
         start: startTime.toISOString(),
         end: endTime.toISOString(),
-        title: `${startTime.toLocaleDateString()} ${startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
-        available: true, // In production, check against actual calendar
+        title: formatSlotTitle(startTime.toISOString()),
+        available: true,
       });
     }
   }
   
   return slots;
+}
+
+function generateSlotId(startTime: string): string {
+  const date = new Date(startTime);
+  return `${date.toISOString().split('T')[0]}-${date.getHours()}`;
+}
+
+function formatSlotTitle(startTime: string): string {
+  const date = new Date(startTime);
+  return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 }

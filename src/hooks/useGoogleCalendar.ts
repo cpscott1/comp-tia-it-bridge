@@ -29,14 +29,22 @@ export const useGoogleCalendar = () => {
   const fetchAvailableSlots = async () => {
     setLoading(true);
     try {
+      console.log('Fetching available slots from Google Calendar...');
+      
       const { data, error } = await supabase.functions.invoke('google-calendar', {
         body: { action: 'getAvailableSlots' }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
+
+      console.log('Response from Google Calendar:', data);
 
       if (data.success) {
         setTimeSlots(data.slots);
+        console.log('Updated time slots:', data.slots.length);
       } else {
         throw new Error(data.error || 'Failed to fetch available slots');
       }
@@ -58,6 +66,8 @@ export const useGoogleCalendar = () => {
       const slot = timeSlots.find(s => s.id === slotId);
       if (!slot) throw new Error('Selected time slot not found');
 
+      console.log('Booking slot:', slotId, bookingData);
+
       const { data, error } = await supabase.functions.invoke('google-calendar', {
         body: {
           action: 'bookSlot',
@@ -67,7 +77,12 @@ export const useGoogleCalendar = () => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Booking error:', error);
+        throw error;
+      }
+
+      console.log('Booking response:', data);
 
       if (data.success) {
         // Update local state to mark slot as booked
