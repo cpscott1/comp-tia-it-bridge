@@ -81,6 +81,47 @@ const N8nCalendarBooking = () => {
         </CardContent>
       </Card>
 
+      {/* Schedule New Meeting - Always show this section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Schedule Progress Review</CardTitle>
+          <CardDescription>
+            Book a 30-minute session to discuss your weekly progress
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="datetime">Select Date & Time</Label>
+            <Input
+              id="datetime"
+              type="datetime-local"
+              value={selectedDateTime}
+              onChange={(e) => setSelectedDateTime(e.target.value)}
+              min={minDateTime}
+              className="w-full"
+            />
+          </div>
+
+          <Button 
+            onClick={handleBookMeeting} 
+            disabled={loading || !selectedDateTime}
+            className="w-full"
+          >
+            {loading ? (
+              <div className="flex items-center space-x-2">
+                <Clock className="h-4 w-4 animate-spin" />
+                <span>Scheduling...</span>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Calendar className="h-4 w-4" />
+                <span>Book 30min Progress Review</span>
+              </div>
+            )}
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* Upcoming Meetings */}
       {upcomingMeetings.length > 0 && (
         <Card>
@@ -111,49 +152,6 @@ const N8nCalendarBooking = () => {
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Schedule New Meeting */}
-      {upcomingMeetings.length === 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Schedule Progress Review</CardTitle>
-            <CardDescription>
-              Book a 30-minute session to discuss your weekly progress
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="datetime">Select Date & Time</Label>
-              <Input
-                id="datetime"
-                type="datetime-local"
-                value={selectedDateTime}
-                onChange={(e) => setSelectedDateTime(e.target.value)}
-                min={minDateTime}
-                className="w-full"
-              />
-            </div>
-
-            <Button 
-              onClick={handleBookMeeting} 
-              disabled={loading || !selectedDateTime}
-              className="w-full"
-            >
-              {loading ? (
-                <div className="flex items-center space-x-2">
-                  <Clock className="h-4 w-4 animate-spin" />
-                  <span>Scheduling...</span>
-                </div>
-              ) : (
-                <div className="flex items-center space-x-2">
-                  <Calendar className="h-4 w-4" />
-                  <span>Book 30min Progress Review</span>
-                </div>
-              )}
-            </Button>
           </CardContent>
         </Card>
       )}
