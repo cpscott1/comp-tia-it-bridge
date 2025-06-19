@@ -8,6 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CalendarEvent {
   id: string;
@@ -18,7 +20,7 @@ interface CalendarEvent {
   studentEmail: string;
   topic: string;
   notes?: string;
-  status: 'confirmed' | 'pending' | 'completed';
+  status: 'confirmed' | 'pending' | 'completed' | 'scheduled';
 }
 
 const InstructorCalendar = () => {
@@ -27,37 +29,70 @@ const InstructorCalendar = () => {
   const [isAddingAvailability, setIsAddingAvailability] = useState(false);
   const { toast } = useToast();
 
-  // Sample events for demonstration
-  useEffect(() => {
-    const sampleEvents: CalendarEvent[] = [
-      {
-        id: "1",
-        title: "Progress Discussion - John Smith",
-        start: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-        end: new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString(),
-        studentName: "John Smith",
-        studentEmail: "john.smith@email.com",
-        topic: "Week 1 Progress Review",
-        notes: "Struggling with networking concepts",
-        status: "confirmed"
-      },
-      {
-        id: "2",
-        title: "Progress Discussion - Sarah Johnson",
-        start: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
-        end: new Date(Date.now() + 49 * 60 * 60 * 1000).toISOString(),
-        studentName: "Sarah Johnson",
-        studentEmail: "sarah.j@email.com",
-        topic: "Week 2 Assignment Help",
-        status: "confirmed"
+  // Fetch real meeting data from Supabase
+  const { data: meetings, isLoading } = useQuery({
+    queryKey: ['instructor-meetings'],
+    queryFn: async () => {
+      console.log('Fetching instructor meetings...');
+      
+      // Get all meetings with student information
+      const { data: meetingsData, error: meetingsError } = await supabase
+        .from('meetings')
+        .select(`
+          id,
+          scheduled_time,
+          end_time,
+          assignment_week,
+          status,
+          event_id,
+          calendar_link,
+          student_id,
+          students (
+            name,
+            email
+          )
+        `)
+        .order('scheduled_time', { ascending: true });
+
+      if (meetingsError) {
+        console.error('Error fetching meetings:', meetingsError);
+        throw meetingsError;
       }
-    ];
-    setEvents(sampleEvents);
-  }, []);
+
+      console.log('Fetched meetings:', meetingsData);
+      return meetingsData || [];
+    },
+  });
+
+  // Transform meetings data to calendar events
+  useEffect(() => {
+    if (meetings) {
+      const transformedEvents: CalendarEvent[] = meetings.map((meeting) => {
+        const student = meeting.students as any;
+        const studentName = student?.name || 'Unknown Student';
+        const studentEmail = student?.email || 'unknown@email.com';
+        
+        return {
+          id: meeting.id,
+          title: `Progress Discussion - ${studentName}`,
+          start: meeting.scheduled_time,
+          end: meeting.end_time,
+          studentName: studentName,
+          studentEmail: studentEmail,
+          topic: meeting.assignment_week || 'Progress Review',
+          status: meeting.status === 'scheduled' ? 'confirmed' : meeting.status as any,
+        };
+      });
+      
+      setEvents(transformedEvents);
+      console.log('Transformed events:', transformedEvents);
+    }
+  }, [meetings]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'confirmed': return 'bg-green-100 text-green-800';
+      case 'confirmed': 
+      case 'scheduled': return 'bg-green-100 text-green-800';
       case 'pending': return 'bg-yellow-100 text-yellow-800';
       case 'completed': return 'bg-blue-100 text-blue-800';
       default: return 'bg-gray-100 text-gray-800';
@@ -83,6 +118,25 @@ const InstructorCalendar = () => {
     const today = new Date();
     return eventDate > today;
   }).slice(0, 5);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid md:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <div className="animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+                  <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
