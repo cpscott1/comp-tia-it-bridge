@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -39,7 +38,7 @@ export const useN8nCalendar = () => {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const N8N_WEBHOOK_URL = "https://bridgeresources.app.n8n.cloud/webhook-test/book-progress-meeting";
+  const N8N_WEBHOOK_URL = "https://bridgeresources.app.n8n.cloud/webhook/book-progress-meeting";
 
   const fetchStudentData = async () => {
     if (!user) return;
@@ -188,8 +187,10 @@ export const useN8nCalendar = () => {
       try {
         const response = await fetch(N8N_WEBHOOK_URL, {
           method: 'POST',
+          mode: 'cors',
           headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
           },
           body: JSON.stringify(payload),
           signal: controller.signal
@@ -265,12 +266,12 @@ export const useN8nCalendar = () => {
         clearTimeout(timeoutId);
         
         if (fetchError.name === 'AbortError') {
-          throw new Error('Request timed out - webhook not responding');
+          console.warn('Request timed out, creating manual meeting record');
+        } else {
+          console.warn('Webhook call failed:', fetchError);
         }
         
         // If webhook fails, create a manual meeting record for now
-        console.warn('Webhook failed, creating manual meeting record:', fetchError);
-        
         const endTime = new Date(new Date(bookingData.preferred_time).getTime() + (duration * 60 * 1000));
         
         const { data: meetingData, error: meetingError } = await supabase
@@ -315,7 +316,7 @@ export const useN8nCalendar = () => {
       
       toast({
         title: "Booking Failed",
-        description: error instanceof Error ? error.message : "Failed to book meeting. Please try again.",
+        description: "Unable to connect to booking service. Please check your internet connection and try again.",
         variant: "destructive",
       });
       return { success: false };
