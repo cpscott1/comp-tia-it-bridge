@@ -1,5 +1,5 @@
 
-import CalendarBooking from "@/components/calendar/CalendarBooking";
+import N8nCalendarBooking from "@/components/calendar/N8nCalendarBooking";
 
 const CalendarBookingPage = () => {
   return (
@@ -14,7 +14,7 @@ const CalendarBookingPage = () => {
           </p>
         </div>
         
-        <CalendarBooking />
+        <N8nCalendarBooking />
       </div>
     </div>
   );

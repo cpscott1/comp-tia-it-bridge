@@ -72,6 +72,53 @@ export type Database = {
         }
         Relationships: []
       }
+      meetings: {
+        Row: {
+          assignment_week: string | null
+          calendar_link: string | null
+          created_at: string | null
+          end_time: string
+          event_id: string
+          id: string
+          scheduled_time: string
+          status: string | null
+          student_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          assignment_week?: string | null
+          calendar_link?: string | null
+          created_at?: string | null
+          end_time: string
+          event_id: string
+          id?: string
+          scheduled_time: string
+          status?: string | null
+          student_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          assignment_week?: string | null
+          calendar_link?: string | null
+          created_at?: string | null
+          end_time?: string
+          event_id?: string
+          id?: string
+          scheduled_time?: string
+          status?: string | null
+          student_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meetings_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       practice_questions: {
         Row: {
           correct_answer: number
@@ -205,6 +252,42 @@ export type Database = {
           description?: string | null
           id?: string
           name?: string
+        }
+        Relationships: []
+      }
+      students: {
+        Row: {
+          created_at: string | null
+          current_assignment: string | null
+          current_week: number | null
+          email: string | null
+          id: string
+          name: string
+          next_meeting_time: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_assignment?: string | null
+          current_week?: number | null
+          email?: string | null
+          id?: string
+          name: string
+          next_meeting_time?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_assignment?: string | null
+          current_week?: number | null
+          email?: string | null
+          id?: string
+          name?: string
+          next_meeting_time?: string | null
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
