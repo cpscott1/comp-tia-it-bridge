@@ -34,6 +34,20 @@ const InstructorCalendar = () => {
     queryFn: async () => {
       console.log('Fetching instructor meetings...');
       
+      // First check if there are any meetings at all
+      const { data: allMeetings, error: allMeetingsError } = await supabase
+        .from('meetings')
+        .select('*');
+      
+      console.log('All meetings in database:', allMeetings);
+      
+      // Check if there are any students
+      const { data: allStudents, error: studentsError } = await supabase
+        .from('students')
+        .select('*');
+      
+      console.log('All students in database:', allStudents);
+      
       // Get all meetings with student information using proper join
       const { data: meetingsData, error: meetingsError } = await supabase
         .from('meetings')
@@ -58,7 +72,7 @@ const InstructorCalendar = () => {
         throw meetingsError;
       }
 
-      console.log('Fetched meetings:', meetingsData);
+      console.log('Fetched meetings with join:', meetingsData);
       return meetingsData || [];
     },
   });
