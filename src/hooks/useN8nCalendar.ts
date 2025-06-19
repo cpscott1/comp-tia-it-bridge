@@ -169,6 +169,7 @@ export const useN8nCalendar = () => {
       const payload = {
         student_id: student.id,
         student_name: student.name,
+        student_email: student.email,
         assignment: {
           week: `Week ${student.current_week}`,
           title: student.current_assignment || 'Progress Review'
@@ -177,12 +178,12 @@ export const useN8nCalendar = () => {
         duration: duration
       };
 
-      console.log('Attempting to call n8n webhook:', N8N_WEBHOOK_URL);
-      console.log('Payload:', payload);
+      console.log('Calling n8n webhook:', N8N_WEBHOOK_URL);
+      console.log('Payload being sent:', payload);
       
       // Try the webhook call with a timeout
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
 
       try {
         const response = await fetch(N8N_WEBHOOK_URL, {
@@ -198,19 +199,28 @@ export const useN8nCalendar = () => {
 
         clearTimeout(timeoutId);
 
-        console.log('Response status:', response.status);
-        console.log('Response ok:', response.ok);
-
+        console.log('Webhook response status:', response.status);
+        console.log('Webhook response headers:', Object.fromEntries(response.headers.entries()));
+        
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          const errorText = await response.text();
+          console.error('Webhook error response:', errorText);
+          throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
         }
 
         const result = await response.json();
-        console.log('Response result:', result);
+        console.log('Webhook success response:', result);
         
         if (result.success) {
           // Calculate end time
           const endTime = new Date(new Date(bookingData.preferred_time).getTime() + (duration * 60 * 1000));
+          
+          const calendarLink = result.event_details?.meeting_link || 
+                              result.event_details?.calendar_link || 
+                              result.calendar_link ||
+                              '#';
+          
+          console.log('Calendar link received:', calendarLink);
           
           // Save meeting details to Supabase
           const { data: meetingData, error: meetingError } = await supabase
@@ -218,8 +228,8 @@ export const useN8nCalendar = () => {
             .insert([
               {
                 student_id: student.id,
-                event_id: result.event_details?.event_id || `manual-${Date.now()}`,
-                calendar_link: result.event_details?.meeting_link || '#',
+                event_id: result.event_details?.event_id || result.event_id || `webhook-${Date.now()}`,
+                calendar_link: calendarLink,
                 scheduled_time: bookingData.preferred_time,
                 end_time: endTime.toISOString(),
                 assignment_week: `Week ${student.current_week}`,
@@ -231,6 +241,8 @@ export const useN8nCalendar = () => {
 
           if (meetingError) {
             console.error('Supabase meeting error:', meetingError);
+          } else {
+            console.log('Meeting saved to database:', meetingData);
           }
 
           // Update student's next meeting time
@@ -250,14 +262,14 @@ export const useN8nCalendar = () => {
           await fetchStudentData();
 
           toast({
-            title: "Meeting Scheduled",
-            description: `Your progress review has been scheduled for ${new Date(bookingData.preferred_time).toLocaleString()}`,
+            title: "Meeting Scheduled Successfully",
+            description: `Your progress review has been scheduled for ${new Date(bookingData.preferred_time).toLocaleString()}. ${calendarLink !== '#' ? 'Check your upcoming meetings for the calendar link.' : 'You should receive a calendar invitation shortly.'}`,
           });
 
           return { 
             success: true, 
-            eventId: result.event_details?.event_id || `manual-${Date.now()}`,
-            meetingLink: result.event_details?.meeting_link || '#'
+            eventId: result.event_details?.event_id || result.event_id || `webhook-${Date.now()}`,
+            meetingLink: calendarLink
           };
         } else {
           throw new Error(result.message || 'Booking failed - webhook returned error');
@@ -265,11 +277,7 @@ export const useN8nCalendar = () => {
       } catch (fetchError) {
         clearTimeout(timeoutId);
         
-        if (fetchError.name === 'AbortError') {
-          console.warn('Request timed out, creating manual meeting record');
-        } else {
-          console.warn('Webhook call failed:', fetchError);
-        }
+        console.error('Webhook call failed:', fetchError);
         
         // If webhook fails, create a manual meeting record for now
         const endTime = new Date(new Date(bookingData.preferred_time).getTime() + (duration * 60 * 1000));
