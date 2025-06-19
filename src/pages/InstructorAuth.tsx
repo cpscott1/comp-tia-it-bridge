@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useInstructorInvitation } from '@/hooks/useInstructorInvitation';
@@ -53,7 +52,7 @@ export default function InstructorAuth() {
           
           if (profile?.role === 'instructor' || profile?.role === 'admin') {
             console.log('User has instructor role, redirecting...');
-            navigate('/instructor');
+            navigate('/instructor-dashboard');
           } else {
             console.log('User does not have instructor role');
             toast({
@@ -166,7 +165,7 @@ export default function InstructorAuth() {
         title: "Instructor Account Created!",
         description: "Your instructor account has been created successfully. Please check your email to verify your account.",
       });
-      navigate('/instructor');
+      navigate('/instructor-dashboard');
     } catch (error) {
       console.error('Unexpected error during sign up:', error);
       toast({
