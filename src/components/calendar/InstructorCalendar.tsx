@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,7 +34,7 @@ const InstructorCalendar = () => {
     queryFn: async () => {
       console.log('Fetching instructor meetings...');
       
-      // Get all meetings with student information
+      // Get all meetings with student information using proper join
       const { data: meetingsData, error: meetingsError } = await supabase
         .from('meetings')
         .select(`
@@ -47,7 +46,7 @@ const InstructorCalendar = () => {
           event_id,
           calendar_link,
           student_id,
-          students (
+          students!inner (
             name,
             email
           )
@@ -68,7 +67,8 @@ const InstructorCalendar = () => {
   useEffect(() => {
     if (meetings) {
       const transformedEvents: CalendarEvent[] = meetings.map((meeting) => {
-        const student = meeting.students as any;
+        // Handle the students relationship properly
+        const student = Array.isArray(meeting.students) ? meeting.students[0] : meeting.students;
         const studentName = student?.name || 'Unknown Student';
         const studentEmail = student?.email || 'unknown@email.com';
         
