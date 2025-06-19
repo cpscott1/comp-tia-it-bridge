@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -167,12 +166,25 @@ export const useN8nCalendar = () => {
     try {
       const duration = bookingData.duration || 30;
       
-      // Call n8n webhook to create calendar event
+      console.log('Calling n8n webhook:', N8N_WEBHOOK_URL);
+      console.log('Payload:', {
+        student_id: student.id,
+        student_name: student.name,
+        assignment: {
+          week: `Week ${student.current_week}`,
+          title: student.current_assignment || 'Progress Review'
+        },
+        preferred_time: bookingData.preferred_time,
+        duration: duration
+      });
+      
+      // Call n8n webhook to create calendar event with CORS handling
       const response = await fetch(N8N_WEBHOOK_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        mode: 'cors', // Explicitly set CORS mode
         body: JSON.stringify({
           student_id: student.id,
           student_name: student.name,
@@ -185,11 +197,15 @@ export const useN8nCalendar = () => {
         })
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const result = await response.json();
+      console.log('Response result:', result);
       
       if (result.success) {
         // Calculate end time
@@ -253,9 +269,19 @@ export const useN8nCalendar = () => {
       }
     } catch (error) {
       console.error('Booking error:', error);
+      
+      // Provide more specific error messages
+      let errorMessage = "Failed to book meeting. Please try again.";
+      
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        errorMessage = "Unable to connect to booking service. Please check your internet connection and try again.";
+      } else if (error instanceof Error && error.message.includes('HTTP error')) {
+        errorMessage = `Booking service error (${error.message}). Please try again later.`;
+      }
+      
       toast({
         title: "Booking Failed",
-        description: "Failed to book meeting. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
       return { success: false };
