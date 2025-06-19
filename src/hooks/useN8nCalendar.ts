@@ -45,20 +45,54 @@ export const useN8nCalendar = () => {
     if (!user) return;
 
     try {
+      // First try to get existing student record
       const { data, error } = await supabase
         .from('students')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching student:', error);
         return;
       }
 
-      setStudent(data);
+      if (data) {
+        setStudent(data);
+      } else {
+        // Create student record if it doesn't exist
+        console.log('No student record found, creating one...');
+        const firstName = user.user_metadata?.first_name || '';
+        const lastName = user.user_metadata?.last_name || '';
+        const fullName = `${firstName} ${lastName}`.trim() || 'Student';
+
+        const { data: newStudent, error: createError } = await supabase
+          .from('students')
+          .insert([{
+            user_id: user.id,
+            name: fullName,
+            email: user.email,
+            current_week: 1,
+            current_assignment: 'Getting Started'
+          }])
+          .select()
+          .single();
+
+        if (createError) {
+          console.error('Error creating student record:', createError);
+          toast({
+            title: "Error",
+            description: "Failed to create student profile",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        setStudent(newStudent);
+        console.log('Student record created successfully');
+      }
     } catch (error) {
-      console.error('Error fetching student data:', error);
+      console.error('Error in fetchStudentData:', error);
     }
   };
 
@@ -73,10 +107,15 @@ export const useN8nCalendar = () => {
         .from('students')
         .select('id')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (studentError || !studentData) {
+      if (studentError) {
         console.error('Error fetching student for meetings:', studentError);
+        return;
+      }
+
+      if (!studentData) {
+        console.log('No student record found for meetings');
         return;
       }
 
