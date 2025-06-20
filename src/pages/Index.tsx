@@ -1,126 +1,87 @@
 
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   BookOpen, 
   Brain, 
-  Download, 
-  Calendar,
-  HelpCircle, 
-  Briefcase, 
-  User, 
-  LogOut,
+  FileText, 
+  Users,
   Trophy,
-  Target,
   Clock,
-  Users
+  CheckCircle
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { WeekSelector } from "@/components/WeekSelector";
 import { useWeekProgress } from "@/hooks/useWeekProgress";
 import { useUserQuizAttempts } from "@/hooks/useQuizAttempts";
-import { WeekSelector } from "@/components/WeekSelector";
-import UserMenu from "@/components/UserMenu";
+import { useAuth } from "@/hooks/useAuth";
+import { Link } from "react-router-dom";
 
 const Index = () => {
-  const { user } = useAuth();
+  const [selectedWeek, setSelectedWeek] = useState<number>(1);
   const { data: weekProgress } = useWeekProgress();
-  const { data: attempts } = useUserQuizAttempts();
+  const { data: quizAttempts = [] } = useUserQuizAttempts();
+  const { user } = useAuth();
+
+  // Course structure
+  const courseWeeks = [
+    {
+      number: 1,
+      title: "Hardware Fundamentals",
+      description: "Computer components, motherboards, CPUs, memory, storage devices"
+    },
+    {
+      number: 2,
+      title: "Operating Systems",
+      description: "Windows, macOS, Linux basics, file systems, and basic troubleshooting"
+    },
+    // Future weeks - coming soon
+    ...Array.from({ length: 10 }, (_, i) => ({
+      number: i + 3,
+      title: "Coming Soon",
+      description: "Additional content will be available soon"
+    }))
+  ];
 
   const currentWeek = weekProgress?.current_week || 1;
-  const completedWeeks = weekProgress?.completed_weeks || [];
-  const totalWeeks = 12;
-  const progressPercentage = (completedWeeks.length / totalWeeks) * 100;
 
-  // Calculate recent quiz performance
-  const recentAttempts = attempts?.slice(0, 5) || [];
-  const averageScore = recentAttempts.length > 0 
-    ? Math.round(recentAttempts.reduce((sum, attempt) => sum + (attempt.score / attempt.total_questions * 100), 0) / recentAttempts.length)
+  // Calculate progress stats
+  const totalWeeksCompleted = weekProgress?.completed_weeks.length || 0;
+  const totalQuizAttempts = quizAttempts.length;
+  const averageScore = quizAttempts.length > 0 
+    ? Math.round(quizAttempts.reduce((sum, attempt) => sum + (attempt.score || 0), 0) / quizAttempts.length)
     : 0;
 
-  // Course weeks data for WeekSelector
-  const courseWeeks = Array.from({ length: totalWeeks }, (_, i) => ({
-    number: i + 1,
-    title: `Week ${i + 1}`,
-    description: `CompTIA A+ fundamentals and concepts for week ${i + 1}`,
-    isCompleted: completedWeeks.includes(i + 1),
-    isUnlocked: i + 1 <= currentWeek
-  }));
-
-  const handleWeekChange = (week: number) => {
-    // For now, just log the week selection
-    console.log('Week selected:', week);
-  };
-
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-blue-600">CompTIA A+ Study Hub</CardTitle>
-            <CardDescription>
-              Master hardware fundamentals and ace your certification
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Link to="/auth">
-              <Button className="w-full" size="lg">
-                Get Started
-              </Button>
-            </Link>
-            <div className="text-center">
-              <Link to="/instructor/auth" className="text-sm text-blue-600 hover:underline">
-                Instructor Login
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const recentQuizAttempts = quizAttempts
+    .sort((a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime())
+    .slice(0, 5);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <BookOpen className="h-5 w-5 text-white" />
-              </div>
-              <h1 className="text-2xl font-bold text-gray-900">CompTIA A+ Study Hub</h1>
-            </div>
-            <UserMenu />
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, {user.user_metadata?.first_name || 'Student'}!
-          </h2>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            CompTIA A+ Learning Platform
+          </h1>
           <p className="text-lg text-gray-600">
-            Continue your CompTIA A+ certification journey
+            Master IT fundamentals with hands-on practice and expert guidance
           </p>
         </div>
 
         {/* Progress Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Current Week</p>
-                  <p className="text-2xl font-bold text-blue-600">Week {currentWeek}</p>
+                  <p className="text-2xl font-bold text-gray-900">{currentWeek}</p>
                 </div>
-                <Target className="h-8 w-8 text-blue-600" />
+                <BookOpen className="h-8 w-8 text-blue-600" />
               </div>
             </CardContent>
           </Card>
@@ -129,12 +90,11 @@ const Index = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Overall Progress</p>
-                  <p className="text-2xl font-bold text-green-600">{Math.round(progressPercentage)}%</p>
+                  <p className="text-sm font-medium text-gray-600">Weeks Completed</p>
+                  <p className="text-2xl font-bold text-gray-900">{totalWeeksCompleted}</p>
                 </div>
-                <Trophy className="h-8 w-8 text-green-600" />
+                <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
-              <Progress value={progressPercentage} className="mt-2" />
             </CardContent>
           </Card>
 
@@ -142,165 +102,195 @@ const Index = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Quiz Average</p>
-                  <p className="text-2xl font-bold text-purple-600">{averageScore}%</p>
+                  <p className="text-sm font-medium text-gray-600">Quiz Attempts</p>
+                  <p className="text-2xl font-bold text-gray-900">{totalQuizAttempts}</p>
                 </div>
                 <Brain className="h-8 w-8 text-purple-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Average Score</p>
+                  <p className="text-2xl font-bold text-gray-900">{averageScore}%</p>
+                </div>
+                <Trophy className="h-8 w-8 text-yellow-600" />
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Week Selection */}
-        <div className="mb-8">
-          <WeekSelector 
-            courseWeeks={courseWeeks}
-            currentWeek={currentWeek}
-            onWeekChange={handleWeekChange}
-          />
-        </div>
+        <WeekSelector 
+          courseWeeks={courseWeeks}
+          currentWeek={selectedWeek}
+          onWeekChange={setSelectedWeek}
+        />
 
-        {/* Study Tools */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Link to="/practice">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Brain className="h-5 w-5 text-blue-600" />
-                  <span>Practice Quiz</span>
-                </CardTitle>
-                <CardDescription>
-                  Test your knowledge with targeted practice questions
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Badge variant="secondary">
-                  {attempts?.length || 0} attempts completed
-                </Badge>
-              </CardContent>
-            </Card>
-          </Link>
+        {/* Main Content Tabs */}
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="practice">Practice</TabsTrigger>
+            <TabsTrigger value="flashcards">Flashcards</TabsTrigger>
+            <TabsTrigger value="help-desk">Help Desk</TabsTrigger>
+          </TabsList>
 
-          <Link to="/flashcards">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <BookOpen className="h-5 w-5 text-green-600" />
-                  <span>Flashcards</span>
-                </CardTitle>
-                <CardDescription>
-                  Review key concepts and definitions
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Badge variant="secondary">Quick review</Badge>
-              </CardContent>
-            </Card>
-          </Link>
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Current Week Content */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Week {selectedWeek}: {courseWeeks[selectedWeek - 1]?.title}</CardTitle>
+                  <CardDescription>
+                    {courseWeeks[selectedWeek - 1]?.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {courseWeeks[selectedWeek - 1]?.title === "Coming Soon" ? (
+                    <div className="text-center py-8">
+                      <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">Content Coming Soon</h3>
+                      <p className="text-gray-600">This week's content is being prepared and will be available soon.</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="space-y-2">
+                        <h4 className="font-semibold">Learning Objectives:</h4>
+                        <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                          <li>Understand core hardware components</li>
+                          <li>Learn troubleshooting methodologies</li>
+                          <li>Practice real-world scenarios</li>
+                        </ul>
+                      </div>
+                      
+                      <div className="flex space-x-3">
+                        <Link to="/practice">
+                          <Button className="flex-1">
+                            <Brain className="h-4 w-4 mr-2" />
+                            Start Practice Questions
+                          </Button>
+                        </Link>
+                        <Link to="/flashcards">
+                          <Button variant="outline" className="flex-1">
+                            <FileText className="h-4 w-4 mr-2" />
+                            Review Flashcards
+                          </Button>
+                        </Link>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
 
-          <Link to="/calendar">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Calendar className="h-5 w-5 text-orange-600" />
-                  <span>Book Progress Meeting</span>
-                </CardTitle>
-                <CardDescription>
-                  Schedule a one-on-one discussion with your instructor
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Badge variant="secondary">
-                  <Clock className="h-3 w-3 mr-1" />
-                  Weekly check-ins
-                </Badge>
-              </CardContent>
-            </Card>
-          </Link>
+              {/* Recent Activity */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Quiz Activity</CardTitle>
+                  <CardDescription>Your latest practice sessions</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {recentQuizAttempts.length > 0 ? (
+                    <div className="space-y-3">
+                      {recentQuizAttempts.map((attempt, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">Quiz Attempt</p>
+                            <p className="text-xs text-gray-600">
+                              {new Date(attempt.completed_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold text-sm">{attempt.score}%</p>
+                            <p className="text-xs text-gray-600">{attempt.total_questions} questions</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Brain className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No Quiz Activity Yet</h3>
+                      <p className="text-gray-600">Start practicing to see your progress here.</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
 
-          <Link to="/job-readiness">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Briefcase className="h-5 w-5 text-purple-600" />
-                  <span>Job Readiness</span>
-                </CardTitle>
-                <CardDescription>
-                  Prepare for your career transition
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Badge variant="secondary">Career prep</Badge>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link to="/downloads">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Download className="h-5 w-5 text-indigo-600" />
-                  <span>Downloads</span>
-                </CardTitle>
-                <CardDescription>
-                  Access study materials and resources
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Badge variant="secondary">Study resources</Badge>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link to="/help">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <HelpCircle className="h-5 w-5 text-red-600" />
-                  <span>Help & Support</span>
-                </CardTitle>
-                <CardDescription>
-                  Get assistance and submit documentation
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Badge variant="secondary">Support</Badge>
-              </CardContent>
-            </Card>
-          </Link>
-        </div>
-
-        {/* Recent Activity */}
-        {recentAttempts.length > 0 && (
-          <div className="mt-8">
+          <TabsContent value="practice" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Recent Quiz Activity</CardTitle>
-                <CardDescription>Your latest practice session results</CardDescription>
+                <CardTitle>Practice Questions</CardTitle>
+                <CardDescription>
+                  Test your knowledge with CompTIA A+ practice questions
+                </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {recentAttempts.slice(0, 3).map((attempt, index) => {
-                    const score = Math.round((attempt.score / attempt.total_questions) * 100);
-                    return (
-                      <div key={attempt.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div>
-                          <p className="font-medium">Practice Quiz #{recentAttempts.length - index}</p>
-                          <p className="text-sm text-gray-600">
-                            {new Date(attempt.completed_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <Badge variant={score >= 80 ? "default" : score >= 60 ? "secondary" : "destructive"}>
-                          {score}%
-                        </Badge>
-                      </div>
-                    );
-                  })}
-                </div>
+              <CardContent className="text-center py-8">
+                <Brain className="h-16 w-16 text-blue-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Ready to Practice?</h3>
+                <p className="text-gray-600 mb-6">
+                  Challenge yourself with questions tailored to Week {selectedWeek}
+                </p>
+                <Link to="/practice">
+                  <Button size="lg">
+                    Start Practice Session
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
-          </div>
-        )}
+          </TabsContent>
+
+          <TabsContent value="flashcards" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Digital Flashcards</CardTitle>
+                <CardDescription>
+                  Review key concepts with interactive flashcards
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="text-center py-8">
+                <FileText className="h-16 w-16 text-green-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Study with Flashcards</h3>
+                <p className="text-gray-600 mb-6">
+                  Master important terms and concepts for Week {selectedWeek}
+                </p>
+                <Link to="/flashcards">
+                  <Button size="lg" variant="outline">
+                    Start Flashcard Review
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="help-desk" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Help Desk Scenarios</CardTitle>
+                <CardDescription>
+                  Practice real-world IT support scenarios
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="text-center py-8">
+                <Users className="h-16 w-16 text-purple-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Real-World Practice</h3>
+                <p className="text-gray-600 mb-6">
+                  Handle customer scenarios and document your solutions
+                </p>
+                <Link to="/help-desk">
+                  <Button size="lg" variant="outline">
+                    Start Help Desk Practice
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
