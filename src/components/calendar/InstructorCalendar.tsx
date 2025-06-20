@@ -1,12 +1,9 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Users, Plus, Settings } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+import { Calendar, Clock, Users, Settings } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -24,29 +21,12 @@ interface CalendarEvent {
 
 const InstructorCalendar = () => {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [isAddingAvailability, setIsAddingAvailability] = useState(false);
-  const { toast } = useToast();
 
   // Fetch real meeting data from Supabase
   const { data: meetings, isLoading } = useQuery({
     queryKey: ['instructor-meetings'],
     queryFn: async () => {
       console.log('Fetching instructor meetings...');
-      
-      // First check if there are any meetings at all
-      const { data: allMeetings, error: allMeetingsError } = await supabase
-        .from('meetings')
-        .select('*');
-      
-      console.log('All meetings in database:', allMeetings);
-      
-      // Check if there are any students
-      const { data: allStudents, error: studentsError } = await supabase
-        .from('students')
-        .select('*');
-      
-      console.log('All students in database:', allStudents);
       
       // Get all meetings with student information using proper join
       const { data: meetingsData, error: meetingsError } = await supabase
@@ -239,7 +219,7 @@ const InstructorCalendar = () => {
             <div className="text-center py-8">
               <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No sessions scheduled for today</h3>
-              <p className="text-gray-600">Enjoy your day! Students can book time slots for future discussions.</p>
+              <p className="text-gray-600">No student sessions are currently scheduled for today.</p>
             </div>
           )}
         </CardContent>
@@ -285,7 +265,7 @@ const InstructorCalendar = () => {
             <div className="text-center py-8">
               <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No upcoming sessions</h3>
-              <p className="text-gray-600">Students can book time slots to discuss their progress.</p>
+              <p className="text-gray-600">No student sessions are currently scheduled.</p>
             </div>
           )}
         </CardContent>
