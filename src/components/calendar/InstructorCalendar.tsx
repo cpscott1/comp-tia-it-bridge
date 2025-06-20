@@ -1,9 +1,8 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Users, Settings } from "lucide-react";
+import { Calendar, Clock, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -176,13 +175,7 @@ const InstructorCalendar = () => {
       {/* Today's Schedule */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Today's Schedule</span>
-            <Button size="sm" variant="outline">
-              <Settings className="h-4 w-4 mr-2" />
-              Manage Availability
-            </Button>
-          </CardTitle>
+          <CardTitle>Today's Schedule</CardTitle>
           <CardDescription>
             Your scheduled progress discussions for today
           </CardDescription>
@@ -207,9 +200,6 @@ const InstructorCalendar = () => {
                       <Badge className={getStatusColor(event.status)}>
                         {event.status}
                       </Badge>
-                      <Button size="sm" variant="outline">
-                        View Details
-                      </Button>
                     </div>
                   </div>
                 );
@@ -253,9 +243,6 @@ const InstructorCalendar = () => {
                       <Badge className={getStatusColor(event.status)}>
                         {event.status}
                       </Badge>
-                      <Button size="sm" variant="outline">
-                        View Details
-                      </Button>
                     </div>
                   </div>
                 );

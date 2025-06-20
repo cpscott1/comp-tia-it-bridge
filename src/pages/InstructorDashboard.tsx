@@ -254,10 +254,6 @@ const InstructorDashboard = () => {
                 Monitor student progress and manage your CompTIA A+ class
               </p>
             </div>
-            <Button onClick={generateWeeklyReport}>
-              <Download className="h-4 w-4 mr-2" />
-              Generate Weekly Report
-            </Button>
           </div>
         </div>
 
@@ -313,13 +309,12 @@ const InstructorDashboard = () => {
         </div>
 
         <Tabs defaultValue="students" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="students">Student Management</TabsTrigger>
-            <TabsTrigger value="calendar">Calendar & Booking</TabsTrigger>
+            <TabsTrigger value="calendar">Calendar</TabsTrigger>
             <TabsTrigger value="documentation">Documentation</TabsTrigger>
             <TabsTrigger value="progress">Progress Tracking</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="reports">Reports</TabsTrigger>
           </TabsList>
 
           <TabsContent value="students" className="space-y-6">
@@ -525,34 +520,6 @@ const InstructorDashboard = () => {
                     <CheckCircle className="h-8 w-8 text-purple-600 mx-auto mb-2" />
                     <div className="text-2xl font-bold text-purple-600">{stats.totalStudents}</div>
                     <div className="text-sm text-gray-600">Enrolled Students</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="reports" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Weekly Reports</CardTitle>
-                <CardDescription>
-                  Auto-generated reports for class impact tracking
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <FileText className="h-5 w-5 text-blue-600" />
-                      <div>
-                        <h4 className="font-semibold">Current Week Report</h4>
-                        <p className="text-sm text-gray-600">Real student data available</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={generateWeeklyReport}>
-                      <Download className="h-4 w-4 mr-2" />
-                      Generate PDF
-                    </Button>
                   </div>
                 </div>
               </CardContent>
