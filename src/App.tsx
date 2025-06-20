@@ -15,9 +15,6 @@ import Practice from "./pages/Practice";
 import Flashcards from "./pages/Flashcards";
 import HelpDesk from "./pages/HelpDesk";
 import JobReadiness from "./pages/JobReadiness";
-import Downloads from "./pages/Downloads";
-import CalendarBookingPage from "./pages/CalendarBooking";
-import CalendarOAuthCallback from "./pages/CalendarOAuthCallback";
 import InvitationManager from "./pages/InvitationManager";
 import NotFound from "./pages/NotFound";
 
@@ -33,7 +30,6 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/instructor-auth" element={<InstructorAuth />} />
-            <Route path="/calendar/oauth-callback" element={<CalendarOAuthCallback />} />
             <Route path="/" element={
               <ProtectedRoute>
                 <Index />
@@ -57,16 +53,6 @@ const App = () => (
             <Route path="/job-readiness" element={
               <ProtectedRoute>
                 <JobReadiness />
-              </ProtectedRoute>
-            } />
-            <Route path="/downloads" element={
-              <ProtectedRoute>
-                <Downloads />
-              </ProtectedRoute>
-            } />
-            <Route path="/calendar" element={
-              <ProtectedRoute>
-                <CalendarBookingPage />
               </ProtectedRoute>
             } />
             <Route path="/instructor-dashboard" element={
