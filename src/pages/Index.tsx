@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,7 +51,7 @@ const Index = () => {
   const totalWeeksCompleted = weekProgress?.completed_weeks.length || 0;
   const totalQuizAttempts = quizAttempts.length;
   const averageScore = quizAttempts.length > 0 
-    ? Math.round(quizAttempts.reduce((sum, attempt) => sum + (attempt.score || 0), 0) / quizAttempts.length)
+    ? Math.round(quizAttempts.reduce((sum, attempt) => sum + ((attempt.score / attempt.total_questions) * 100), 0) / quizAttempts.length)
     : 0;
 
   const recentQuizAttempts = quizAttempts
@@ -204,7 +203,7 @@ const Index = () => {
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="font-semibold text-sm">{attempt.score}%</p>
+                            <p className="font-semibold text-sm">{Math.round((attempt.score / attempt.total_questions) * 100)}%</p>
                             <p className="text-xs text-gray-600">{attempt.total_questions} questions</p>
                           </div>
                         </div>
