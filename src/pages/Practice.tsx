@@ -13,7 +13,7 @@ const Practice = () => {
   const [selectedTopic, setSelectedTopic] = useState<QuizTopic | null>(null);
   const { data: weekProgress } = useWeekProgress();
   const currentWeek = weekProgress?.current_week || 1;
-  const { data: topics = [], isLoading: topicsLoading } = useQuizTopics(currentWeek);
+  const { data: topics = [], isLoading: topicsLoading, refetch: refetchTopics } = useQuizTopics(currentWeek);
   const { toast } = useToast();
 
   // Course weeks data for WeekSelector
@@ -37,16 +37,32 @@ const Practice = () => {
     const autoRestoreQuestions = async () => {
       if (currentWeek === 3) {
         try {
-          await restoreWeek3QuizQuestions();
-          console.log('Week 3 questions restored successfully');
+          console.log('Attempting to restore Week 3 questions...');
+          const result = await restoreWeek3QuizQuestions();
+          console.log('Restoration result:', result);
+          
+          // Refetch topics to update the UI with new questions
+          await refetchTopics();
+          
+          if (result.success) {
+            toast({
+              title: "Questions Updated",
+              description: result.message,
+            });
+          }
         } catch (error) {
-          console.log('Questions may already exist or error occurred:', error);
+          console.error('Error restoring questions:', error);
+          toast({
+            title: "Error",
+            description: "Failed to restore missing questions. Please try refreshing the page.",
+            variant: "destructive",
+          });
         }
       }
     };
 
     autoRestoreQuestions();
-  }, [currentWeek]);
+  }, [currentWeek, toast, refetchTopics]);
 
   const handleTopicSelect = (topic: QuizTopic) => {
     setSelectedTopic(topic);

@@ -2,25 +2,35 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export const restoreWeek3QuizQuestions = async () => {
+  console.log('Starting Week 3 quiz questions restoration...');
+  
   // Get the troubleshooting topic ID
-  const { data: topic } = await supabase
+  const { data: topic, error: topicError } = await supabase
     .from('quiz_topics')
     .select('id')
     .eq('name', 'PC Hardware Troubleshooting')
     .single();
 
-  if (!topic) {
+  if (topicError || !topic) {
+    console.error('Error finding troubleshooting topic:', topicError);
     throw new Error('Troubleshooting topic not found');
   }
 
+  console.log('Found topic:', topic);
+
   // Check existing questions to avoid duplicates
-  const { data: existingQuestions } = await supabase
+  const { data: existingQuestions, error: existingError } = await supabase
     .from('practice_questions')
     .select('question')
     .eq('topic_id', topic.id)
     .eq('week_number', 3);
 
+  if (existingError) {
+    console.error('Error fetching existing questions:', existingError);
+  }
+
   const existingQuestionTexts = existingQuestions?.map(q => q.question) || [];
+  console.log('Found existing questions:', existingQuestionTexts.length);
 
   // The 3 missing questions that need to be added
   const missingQuestions = [
@@ -60,21 +70,29 @@ export const restoreWeek3QuizQuestions = async () => {
     week_number: 3
   }));
 
+  console.log('Questions to insert:', questionsToInsert.length);
+
   if (questionsToInsert.length === 0) {
-    console.log('All 30 questions already exist');
-    return { success: true, message: 'All 30 questions already exist' };
+    console.log('All questions already exist');
+    return { success: true, message: 'All questions already exist' };
   }
+
+  // Check current user session
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  console.log('Current user:', user?.id, 'Error:', userError);
 
   // Insert the missing questions
-  const { error } = await supabase
+  const { data: insertedData, error: insertError } = await supabase
     .from('practice_questions')
-    .insert(questionsToInsert);
+    .insert(questionsToInsert)
+    .select();
 
-  if (error) {
-    console.error('Error inserting questions:', error);
-    throw error;
+  if (insertError) {
+    console.error('Error inserting questions:', insertError);
+    throw insertError;
   }
 
-  console.log(`Added ${questionsToInsert.length} missing questions`);
+  console.log(`Successfully added ${questionsToInsert.length} missing questions`);
+  console.log('Inserted data:', insertedData);
   return { success: true, message: `Added ${questionsToInsert.length} questions` };
 };
