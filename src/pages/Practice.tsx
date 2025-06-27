@@ -1,20 +1,17 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TopicSelector } from "@/components/TopicSelector";
 import { WeekSelector } from "@/components/WeekSelector";
 import { Quiz } from "@/components/Quiz";
 import { useQuizTopics, QuizTopic } from "@/hooks/usePracticeQuestions";
 import { useWeekProgress } from "@/hooks/useWeekProgress";
-import { restoreWeek3QuizQuestions } from "@/hooks/restoreQuizQuestions";
-import { useToast } from "@/hooks/use-toast";
 
 const Practice = () => {
   const [selectedTopic, setSelectedTopic] = useState<QuizTopic | null>(null);
   const { data: weekProgress } = useWeekProgress();
   const currentWeek = weekProgress?.current_week || 1;
-  const { data: topics = [], isLoading: topicsLoading, refetch: refetchTopics } = useQuizTopics(currentWeek);
-  const { toast } = useToast();
+  const { data: topics = [], isLoading: topicsLoading } = useQuizTopics(currentWeek);
 
   // Course weeks data for WeekSelector
   const courseWeeks = [
@@ -31,38 +28,6 @@ const Practice = () => {
     { number: 11, title: "Coming Soon", description: "Advanced topics" },
     { number: 12, title: "Coming Soon", description: "Advanced topics" },
   ];
-
-  // Auto-restore Week 3 questions on component mount
-  useEffect(() => {
-    const autoRestoreQuestions = async () => {
-      if (currentWeek === 3) {
-        try {
-          console.log('Attempting to restore Week 3 questions...');
-          const result = await restoreWeek3QuizQuestions();
-          console.log('Restoration result:', result);
-          
-          // Refetch topics to update the UI with new questions
-          await refetchTopics();
-          
-          if (result.success) {
-            toast({
-              title: "Questions Updated",
-              description: result.message,
-            });
-          }
-        } catch (error) {
-          console.error('Error restoring questions:', error);
-          toast({
-            title: "Error",
-            description: "Failed to restore missing questions. Please try refreshing the page.",
-            variant: "destructive",
-          });
-        }
-      }
-    };
-
-    autoRestoreQuestions();
-  }, [currentWeek, toast, refetchTopics]);
 
   const handleTopicSelect = (topic: QuizTopic) => {
     setSelectedTopic(topic);
