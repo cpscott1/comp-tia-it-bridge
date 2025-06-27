@@ -36,6 +36,47 @@ export type Database = {
         }
         Relationships: []
       }
+      flashcards: {
+        Row: {
+          back: string
+          created_at: string
+          difficulty: string
+          front: string
+          id: string
+          topic_id: string
+          updated_at: string
+          week_number: number | null
+        }
+        Insert: {
+          back: string
+          created_at?: string
+          difficulty?: string
+          front: string
+          id?: string
+          topic_id: string
+          updated_at?: string
+          week_number?: number | null
+        }
+        Update: {
+          back?: string
+          created_at?: string
+          difficulty?: string
+          front?: string
+          id?: string
+          topic_id?: string
+          updated_at?: string
+          week_number?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flashcards_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_invitations: {
         Row: {
           code: string

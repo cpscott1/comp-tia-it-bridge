@@ -1,7 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { PracticeQuestion } from './usePracticeQuestions';
 
 export interface Flashcard {
   id: string;
@@ -18,7 +17,7 @@ export const useFlashcards = (topicId?: string, weekNumber?: number) => {
     queryKey: ['flashcards', topicId, weekNumber],
     queryFn: async () => {
       let query = supabase
-        .from('practice_questions')
+        .from('flashcards')
         .select(`
           *,
           quiz_topics (
@@ -42,15 +41,15 @@ export const useFlashcards = (topicId?: string, weekNumber?: number) => {
         throw error;
       }
       
-      // Convert practice questions to flashcard format
-      const flashcards: Flashcard[] = data.map((question: any) => ({
-        id: question.id,
-        front: question.question,
-        back: question.explanation,
-        category: question.quiz_topics?.name || 'Unknown',
-        difficulty: question.difficulty as 'Easy' | 'Medium' | 'Hard',
-        topicId: question.topic_id,
-        weekNumber: question.week_number || 1,
+      // Convert flashcards to the expected format
+      const flashcards: Flashcard[] = data.map((flashcard: any) => ({
+        id: flashcard.id,
+        front: flashcard.front,
+        back: flashcard.back,
+        category: flashcard.quiz_topics?.name || 'Unknown',
+        difficulty: flashcard.difficulty as 'Easy' | 'Medium' | 'Hard',
+        topicId: flashcard.topic_id,
+        weekNumber: flashcard.week_number || 1,
       }));
       
       return flashcards;
