@@ -4,6 +4,7 @@ import { TopicSelector } from "@/components/TopicSelector";
 import { WeekSelector } from "@/components/WeekSelector";
 import { Quiz } from "@/components/Quiz";
 import { Button } from "@/components/ui/button";
+import { RestoreQuestionsButton } from "@/components/RestoreQuestionsButton";
 import { useQuizTopics } from "@/hooks/usePracticeQuestions";
 import { useWeekProgress } from "@/hooks/useWeekProgress";
 import { QuizTopic } from "@/hooks/usePracticeQuestions";
@@ -131,11 +132,21 @@ const Practice = () => {
           <p className="text-gray-600 mb-4">
             {COURSE_WEEKS[currentWeek - 1]?.description}
           </p>
-          <div className="bg-blue-50 p-4 rounded-lg">
+          <div className="bg-blue-50 p-4 rounded-lg mb-4">
             <p className="text-sm text-blue-800">
               Debug info - Current week: {currentWeek}, Topics found: {topics.length}
             </p>
           </div>
+          
+          {/* Restore button for Week 3 */}
+          {currentWeek === 3 && (
+            <div className="bg-yellow-50 p-4 rounded-lg mb-4">
+              <p className="text-sm text-yellow-800 mb-2">
+                If you're missing quiz questions for Week 3, click the button below to restore them:
+              </p>
+              <RestoreQuestionsButton />
+            </div>
+          )}
         </div>
 
         <TopicSelector
