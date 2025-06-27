@@ -13,17 +13,26 @@ export const restoreWeek3QuizQuestions = async () => {
     throw new Error('Troubleshooting topic not found');
   }
 
-  // Insert the missing quiz questions
+  // Insert all 30 quiz questions from the original list
   const { error } = await supabase
     .from('practice_questions')
     .insert([
-      // BIOS/UEFI Configuration Questions
+      // BIOS/UEFI Configuration Questions (1-5)
       {
         topic_id: topic.id,
         question: 'What key is commonly pressed during boot to access the BIOS/UEFI setup utility?',
         options: ['F1', 'F2 or Delete', 'F8', 'F12'],
         correct_answer: 1,
         explanation: 'F2 and Delete are the most common keys to access BIOS/UEFI setup, though it varies by manufacturer.',
+        difficulty: 'Easy',
+        week_number: 3
+      },
+      {
+        topic_id: topic.id,
+        question: 'What does UEFI stand for?',
+        options: ['Universal Extensible Firmware Interface', 'Unified Extensible Firmware Interface', 'Universal Extended Firmware Interface', 'Unified Extended Firmware Interface'],
+        correct_answer: 1,
+        explanation: 'UEFI is the modern replacement for traditional BIOS with enhanced features and capabilities.',
         difficulty: 'Easy',
         week_number: 3
       },
@@ -54,7 +63,16 @@ export const restoreWeek3QuizQuestions = async () => {
         difficulty: 'Medium',
         week_number: 3
       },
-      // Power Issues Questions
+      // Power Issues Troubleshooting Questions (6-10)
+      {
+        topic_id: topic.id,
+        question: 'A computer shows no signs of power when the power button is pressed. What should you check FIRST?',
+        options: ['The motherboard', 'The CPU', 'Power connections and outlet', 'The RAM'],
+        correct_answer: 2,
+        explanation: 'Always start with the most basic checks: power cord connections, outlet functionality, and PSU switch position.',
+        difficulty: 'Easy',
+        week_number: 3
+      },
       {
         topic_id: topic.id,
         question: 'What does a burning smell from a computer case typically indicate?',
@@ -75,6 +93,15 @@ export const restoreWeek3QuizQuestions = async () => {
       },
       {
         topic_id: topic.id,
+        question: 'A computer randomly shuts down during intensive tasks but works fine for basic operations. What is the most likely cause?',
+        options: ['Virus infection', 'Bad RAM', 'Overheating', 'Network issues'],
+        correct_answer: 2,
+        explanation: 'Random shutdowns during high-load tasks typically indicate thermal protection engaging due to overheating.',
+        difficulty: 'Medium',
+        week_number: 3
+      },
+      {
+        topic_id: topic.id,
         question: 'What does intermittent shutdown usually indicate?',
         options: ['Perfect system health', 'Heat issues or failing components', 'Software updates needed', 'Normal power saving mode'],
         correct_answer: 1,
@@ -82,7 +109,25 @@ export const restoreWeek3QuizQuestions = async () => {
         difficulty: 'Medium',
         week_number: 3
       },
-      // Storage Questions
+      // Storage Device Troubleshooting Questions (11-15)
+      {
+        topic_id: topic.id,
+        question: 'What do clicking sounds from inside a computer case typically indicate?',
+        options: ['Normal hard drive operation', 'Failing or dead hard drive', 'CPU fan issues', 'Power supply problems'],
+        correct_answer: 1,
+        explanation: 'Clicking sounds usually indicate mechanical failure in hard drives - immediate data backup is critical.',
+        difficulty: 'Medium',
+        week_number: 3
+      },
+      {
+        topic_id: topic.id,
+        question: 'What does S.M.A.R.T. stand for?',
+        options: ['System Monitoring and Reporting Technology', 'Self-Monitoring, Analysis, and Reporting Technology', 'Smart Monitoring and Recovery Technology', 'System Management and Recovery Technology'],
+        correct_answer: 1,
+        explanation: 'S.M.A.R.T. monitors drive health and can predict imminent failures before they occur.',
+        difficulty: 'Easy',
+        week_number: 3
+      },
       {
         topic_id: topic.id,
         question: 'What should you do if you hear grinding noises from a computer?',
@@ -101,7 +146,25 @@ export const restoreWeek3QuizQuestions = async () => {
         difficulty: 'Medium',
         week_number: 3
       },
-      // Display Questions
+      {
+        topic_id: topic.id,
+        question: 'What do amber/orange LED indicators on RAID systems typically mean?',
+        options: ['Normal operation', 'Drive failure or degraded array', 'High performance mode', 'Power saving mode'],
+        correct_answer: 1,
+        explanation: 'Amber/orange LEDs on RAID systems indicate failed drives or degraded arrays requiring attention.',
+        difficulty: 'Medium',
+        week_number: 3
+      },
+      // Display and Video Issues Questions (16-20)
+      {
+        topic_id: topic.id,
+        question: 'A monitor displays nothing but you can hear the computer boot up. What should you check FIRST?',
+        options: ['Replace the graphics card', 'Video cable connections and input source', 'Install new drivers', 'Replace the motherboard'],
+        correct_answer: 1,
+        explanation: 'Start with simple checks: cable connections, monitor power, and correct input source selection.',
+        difficulty: 'Easy',
+        week_number: 3
+      },
       {
         topic_id: topic.id,
         question: 'What should you check if a projector display appears dim?',
@@ -129,13 +192,40 @@ export const restoreWeek3QuizQuestions = async () => {
         difficulty: 'Easy',
         week_number: 3
       },
-      // Performance Questions
+      {
+        topic_id: topic.id,
+        question: 'A projector randomly shuts down during presentations. What should you check?',
+        options: ['Network settings', 'Overheating and ventilation', 'Audio levels', 'Keyboard batteries'],
+        correct_answer: 1,
+        explanation: 'Random projector shutdowns often result from overheating due to dust buildup or blocked ventilation.',
+        difficulty: 'Medium',
+        week_number: 3
+      },
+      // System Performance Issues Questions (21-25)
+      {
+        topic_id: topic.id,
+        question: 'What typically causes sluggish computer performance?',
+        options: ['Too much RAM', 'Insufficient memory, slow storage, or malware', 'Fast internet connection', 'New hardware installation'],
+        correct_answer: 1,
+        explanation: 'Slow performance results from hardware limitations (RAM, storage) or software issues (malware, corruption).',
+        difficulty: 'Easy',
+        week_number: 3
+      },
       {
         topic_id: topic.id,
         question: 'What does a blue screen of death (BSOD) typically indicate?',
         options: ['Normal shutdown process', 'Hardware failure or driver issues', 'Successful software installation', 'Network connectivity problems'],
         correct_answer: 1,
         explanation: 'BSODs usually indicate serious hardware problems (RAM, CPU) or incompatible/corrupt device drivers.',
+        difficulty: 'Medium',
+        week_number: 3
+      },
+      {
+        topic_id: topic.id,
+        question: 'If applications crash randomly, what component should you suspect FIRST?',
+        options: ['Network card', 'Sound card', 'RAM (memory)', 'Optical drive'],
+        correct_answer: 2,
+        explanation: 'Random application crashes often indicate memory errors that corrupt running programs.',
         difficulty: 'Medium',
         week_number: 3
       },
@@ -157,7 +247,16 @@ export const restoreWeek3QuizQuestions = async () => {
         difficulty: 'Easy',
         week_number: 3
       },
-      // POST Questions
+      // POST and Boot Issues Questions (26-30)
+      {
+        topic_id: topic.id,
+        question: 'What does POST stand for?',
+        options: ['Power-On Self-Test', 'Peripheral Operating System Test', 'Primary Output System Test', 'Power Output Safety Test'],
+        correct_answer: 0,
+        explanation: 'POST checks internal hardware for compatibility and proper connection before starting the boot process.',
+        difficulty: 'Easy',
+        week_number: 3
+      },
       {
         topic_id: topic.id,
         question: 'What does a single beep during POST typically indicate?',
