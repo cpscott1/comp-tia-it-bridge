@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,9 +38,14 @@ const Index = () => {
       title: "Operating Systems",
       description: "Windows, macOS, Linux basics, file systems, and basic troubleshooting"
     },
+    {
+      number: 3,
+      title: "Troubleshooting PC Hardware",
+      description: "BIOS/UEFI, Power Issues, Storage, Display, and Performance Troubleshooting"
+    },
     // Future weeks - coming soon
-    ...Array.from({ length: 10 }, (_, i) => ({
-      number: i + 3,
+    ...Array.from({ length: 9 }, (_, i) => ({
+      number: i + 4,
       title: "Coming Soon",
       description: "Additional content will be available soon"
     }))
@@ -160,9 +166,27 @@ const Index = () => {
                       <div className="space-y-2">
                         <h4 className="font-semibold">Learning Objectives:</h4>
                         <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-                          <li>Understand core hardware components</li>
-                          <li>Learn troubleshooting methodologies</li>
-                          <li>Practice real-world scenarios</li>
+                          {selectedWeek === 1 && (
+                            <>
+                              <li>Understand core hardware components</li>
+                              <li>Learn about motherboards and expansion slots</li>
+                              <li>Master CPU and memory fundamentals</li>
+                            </>
+                          )}
+                          {selectedWeek === 2 && (
+                            <>
+                              <li>Explore operating system basics</li>
+                              <li>Understand file systems and management</li>
+                              <li>Practice basic troubleshooting steps</li>
+                            </>
+                          )}
+                          {selectedWeek === 3 && (
+                            <>
+                              <li>Master BIOS/UEFI configuration</li>
+                              <li>Diagnose power and performance issues</li>
+                              <li>Troubleshoot storage and display problems</li>
+                            </>
+                          )}
                         </ul>
                       </div>
                       

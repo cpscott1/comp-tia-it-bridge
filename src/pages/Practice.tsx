@@ -23,8 +23,8 @@ const COURSE_WEEKS = [
   },
   {
     number: 3,
-    title: "Coming Soon",
-    description: "Additional CompTIA A+ topics will be added here"
+    title: "Troubleshooting PC Hardware",
+    description: "BIOS/UEFI, Power Issues, Storage, Display, and Performance Troubleshooting"
   },
   {
     number: 4,
@@ -113,7 +113,7 @@ const Practice = () => {
               CompTIA A+ Practice Questions
             </h1>
             <p className="text-lg text-gray-600">
-              Master hardware fundamentals and system installation with structured practice
+              Master hardware fundamentals and troubleshooting with structured practice
             </p>
           </div>
         </div>
