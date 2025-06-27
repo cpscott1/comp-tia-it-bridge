@@ -102,6 +102,86 @@ const HELP_DESK_SCENARIOS: HelpDeskScenario[] = [
     ],
     correctAnswer: 1,
     rationale: "Insufficient privileges errors typically mean the user needs administrator rights to install software. This is a security feature that requires proper authorization."
+  },
+  {
+    id: "hd-6",
+    title: "BIOS Configuration Issue",
+    description: "User changed BIOS settings and now computer won't boot",
+    ticket: "I was trying to improve my computer's performance and went into the BIOS to change some settings. Now my computer won't boot at all - it just shows a black screen with a blinking cursor. I can get into BIOS setup, but I don't remember what I changed.",
+    week: 3,
+    difficulty: 'Medium',
+    options: [
+      "Tell them to buy a new computer",
+      "Guide them to reset BIOS to default settings",
+      "Recommend a complete Windows reinstall",
+      "Suggest they wait and try again tomorrow"
+    ],
+    correctAnswer: 1,
+    rationale: "BIOS changes can prevent boot. Resetting to defaults (Load Setup Defaults or similar option) usually resolves configuration-related boot issues."
+  },
+  {
+    id: "hd-7",
+    title: "Overheating and Performance",
+    description: "Computer shows signs of overheating with performance issues",
+    ticket: "My computer has been getting really slow lately, and yesterday it shut down by itself while I was working on a presentation. When I touched the case, it felt very hot. It's been making more noise than usual too.",
+    week: 3,
+    difficulty: 'Medium',
+    options: [
+      "Recommend they use the computer less frequently",
+      "Suggest checking cooling system, cleaning dust, and verifying fan operation",
+      "Tell them the noise is normal and ignore it",
+      "Recommend immediately replacing the motherboard"
+    ],
+    correctAnswer: 1,
+    rationale: "Symptoms indicate overheating: performance degradation, automatic shutdown, excessive heat and noise. Cooling system maintenance is needed."
+  },
+  {
+    id: "hd-8",
+    title: "Hard Drive Failure",
+    description: "Hard drive showing signs of imminent failure",
+    ticket: "My computer is making weird clicking sounds, especially when I try to open files. Sometimes programs freeze, and this morning I got an error message saying 'disk read error.' I'm worried about losing my important documents.",
+    week: 3,
+    difficulty: 'Hard',
+    options: [
+      "Tell them the clicking is normal hard drive operation",
+      "Recommend immediately backing up data and replacing the drive",
+      "Suggest defragmenting the hard drive to fix the sounds",
+      "Advise running disk cleanup to solve the problem"
+    ],
+    correctAnswer: 1,
+    rationale: "Clicking sounds with read errors indicate imminent hard drive failure. Data backup is critical before complete failure occurs."
+  },
+  {
+    id: "hd-9",
+    title: "Display Problems",
+    description: "Monitor showing no signal but computer is running",
+    ticket: "My monitor suddenly went black in the middle of working, but I can still hear sounds from the computer like email notifications. I checked that the monitor is plugged in and turned on, but it just shows 'No Signal' now.",
+    week: 3,
+    difficulty: 'Easy',
+    options: [
+      "Tell them to buy a new monitor immediately",
+      "Guide them to check video cable connections and try a different cable",
+      "Recommend restarting the computer 10 times",
+      "Suggest it's a virus and run antivirus software"
+    ],
+    correctAnswer: 1,
+    rationale: "\"No Signal\" with working audio suggests video connection issues. Check cable connections, try different cables, and verify correct input source."
+  },
+  {
+    id: "hd-10",
+    title: "Memory and Stability Issues",
+    description: "Random crashes and blue screens indicating memory problems",
+    ticket: "My computer has been acting really strange lately. Programs keep crashing randomly, sometimes I get blue screens with lots of text, and occasionally the computer restarts by itself. It seems to happen more when I'm running multiple programs.",
+    week: 3,
+    difficulty: 'Hard',
+    options: [
+      "Tell them to only run one program at a time permanently",
+      "Suggest testing memory (RAM) and checking for overheating",
+      "Recommend never saving files to prevent crashes",
+      "Advise that random crashes are normal for all computers"
+    ],
+    correctAnswer: 1,
+    rationale: "Random crashes, blue screens, and application failures often indicate memory problems or overheating, especially under load (multiple programs)."
   }
 ];
 
