@@ -3,8 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CheckCircle, Clock, BookOpen } from "lucide-react";
 import { QuizTopic } from "@/hooks/usePracticeQuestions";
 import { usePracticeQuestions } from "@/hooks/usePracticeQuestions";
+import { useFlashcards } from "@/hooks/useFlashcards";
 import { useUserQuizAttempts } from "@/hooks/useQuizAttempts";
 import { useWeekProgress } from "@/hooks/useWeekProgress";
+import { useLocation } from "react-router-dom";
 
 interface TopicSelectorProps {
   topics: QuizTopic[];
@@ -16,10 +18,13 @@ export const TopicSelector = ({ topics, onTopicSelect, loading }: TopicSelectorP
   const { data: weekProgress } = useWeekProgress();
   const currentWeek = weekProgress?.current_week || 1;
   const { data: attempts = [] } = useUserQuizAttempts();
+  const location = useLocation();
+  const isFlashcardsPage = location.pathname === '/flashcards';
 
   console.log("TopicSelector - Current week:", currentWeek);
   console.log("TopicSelector - Week progress:", weekProgress);
   console.log("TopicSelector - Available topics:", topics);
+  console.log("TopicSelector - Is flashcards page:", isFlashcardsPage);
 
   if (loading) {
     return (
@@ -47,6 +52,7 @@ export const TopicSelector = ({ topics, onTopicSelect, loading }: TopicSelectorP
           topic={topic} 
           currentWeek={currentWeek}
           attempts={attempts}
+          isFlashcardsPage={isFlashcardsPage}
           onSelect={onTopicSelect} 
         />;
       })}
@@ -58,20 +64,31 @@ const TopicCard = ({
   topic, 
   currentWeek, 
   attempts, 
+  isFlashcardsPage,
   onSelect 
 }: { 
   topic: QuizTopic; 
   currentWeek: number;
   attempts: any[];
+  isFlashcardsPage: boolean;
   onSelect: (topic: QuizTopic) => void; 
 }) => {
-  // Get questions for this topic and current week only
+  // Get questions for practice or flashcards based on the page
   const { data: allQuestions = [] } = usePracticeQuestions(topic.id);
+  const { data: allFlashcards = [] } = useFlashcards(topic.id);
+  
   const weekQuestions = allQuestions.filter(q => q.week_number === currentWeek);
+  const weekFlashcards = allFlashcards.filter(f => f.weekNumber === currentWeek);
+  
+  // Use appropriate count based on page type
+  const itemCount = isFlashcardsPage ? weekFlashcards.length : weekQuestions.length;
+  const itemType = isFlashcardsPage ? "Flashcards" : "Questions";
   
   console.log(`TopicCard ${topic.name} - All questions:`, allQuestions.length);
+  console.log(`TopicCard ${topic.name} - All flashcards:`, allFlashcards.length);
   console.log(`TopicCard ${topic.name} - Week ${currentWeek} questions:`, weekQuestions.length);
-  console.log(`TopicCard ${topic.name} - Week questions details:`, weekQuestions.map(q => ({ id: q.id, week: q.week_number })));
+  console.log(`TopicCard ${topic.name} - Week ${currentWeek} flashcards:`, weekFlashcards.length);
+  console.log(`TopicCard ${topic.name} - Item count (${itemType}):`, itemCount);
   
   // Get the most recent attempt for this topic AND current week specifically
   const recentAttempt = attempts
@@ -129,8 +146,8 @@ const TopicCard = ({
       <CardContent>
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-600">Week {currentWeek} Questions:</span>
-            <span className="font-medium">{weekQuestions.length}</span>
+            <span className="text-sm text-gray-600">Week {currentWeek} {itemType}:</span>
+            <span className="font-medium">{itemCount}</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Status:</span>
