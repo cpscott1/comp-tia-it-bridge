@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { useFlashcards } from "@/hooks/useFlashcards";
 import { useQuizTopics, QuizTopic } from "@/hooks/usePracticeQuestions";
 import { TopicSelector } from "@/components/TopicSelector";
+import { useWeekProgress } from "@/hooks/useWeekProgress";
 
 const Flashcards = () => {
   const [selectedTopic, setSelectedTopic] = useState<QuizTopic | null>(null);
@@ -18,7 +19,12 @@ const Flashcards = () => {
   const [showCompletion, setShowCompletion] = useState(false);
 
   const { data: topics = [], isLoading: topicsLoading } = useQuizTopics();
-  const { data: flashcards = [], isLoading: flashcardsLoading } = useFlashcards(selectedTopic?.id);
+  const { data: weekProgress } = useWeekProgress();
+  const currentWeek = weekProgress?.current_week || 1;
+  
+  // Pass currentWeek for Help Desk Scenarios, undefined for others to get all flashcards
+  const weekNumberForQuery = selectedTopic?.id === '71c04cd6-3deb-4f89-a549-ca8d0737c2f0' ? currentWeek : undefined;
+  const { data: flashcards = [], isLoading: flashcardsLoading } = useFlashcards(selectedTopic?.id, weekNumberForQuery);
 
   const currentFlashcard = flashcards[currentCard];
   const totalCards = flashcards.length;

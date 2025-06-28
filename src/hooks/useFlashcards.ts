@@ -114,16 +114,23 @@ export const useFlashcards = (topicId?: string, weekNumber?: number) => {
   return useQuery({
     queryKey: ['flashcards', topicId, weekNumber],
     queryFn: async () => {
-      // If requesting Help Desk Scenarios, return hardcoded flashcards for the specific week
+      // If requesting Help Desk Scenarios, return hardcoded flashcards
       if (topicId === '71c04cd6-3deb-4f89-a549-ca8d0737c2f0') {
         console.log('Returning Help Desk flashcards for topicId:', topicId, 'weekNumber:', weekNumber);
+        
+        // If no specific week is requested, return all available flashcards for the current week context
+        // This handles the case when weekNumber is undefined (which happens when selecting from topic list)
+        if (!weekNumber) {
+          // Return both weeks' flashcards when no specific week is requested
+          return [...week2HelpDeskFlashcards, ...week3HelpDeskFlashcards];
+        }
         
         if (weekNumber === 2) {
           return week2HelpDeskFlashcards;
         } else if (weekNumber === 3) {
           return week3HelpDeskFlashcards;
         } else {
-          // Return both weeks if no specific week is requested
+          // Fallback: return both weeks if week number doesn't match
           return [...week2HelpDeskFlashcards, ...week3HelpDeskFlashcards];
         }
       }
