@@ -20,7 +20,7 @@ const week3HelpDeskFlashcards: Flashcard[] = [
     back: 'Guide them to reset BIOS to default settings. BIOS changes can prevent boot. Resetting to defaults (Load Setup Defaults or similar option) usually resolves configuration-related boot issues.',
     category: 'Week 3 Help Desk Scenarios',
     difficulty: 'Medium',
-    topicId: 'week3-helpdesk',
+    topicId: '71c04cd6-3deb-4f89-a549-ca8d0737c2f0',
     weekNumber: 3,
   },
   {
@@ -29,7 +29,7 @@ const week3HelpDeskFlashcards: Flashcard[] = [
     back: 'Suggest checking cooling system, cleaning dust, and verifying fan operation. Symptoms indicate overheating: performance degradation, automatic shutdown, excessive heat and noise. Cooling system maintenance is needed.',
     category: 'Week 3 Help Desk Scenarios',
     difficulty: 'Medium',
-    topicId: 'week3-helpdesk',
+    topicId: '71c04cd6-3deb-4f89-a549-ca8d0737c2f0',
     weekNumber: 3,
   },
   {
@@ -38,7 +38,7 @@ const week3HelpDeskFlashcards: Flashcard[] = [
     back: 'Recommend immediately backing up data and replacing the drive. Clicking sounds with read errors indicate imminent hard drive failure. Data backup is critical before complete failure occurs.',
     category: 'Week 3 Help Desk Scenarios',
     difficulty: 'Hard',
-    topicId: 'week3-helpdesk',
+    topicId: '71c04cd6-3deb-4f89-a549-ca8d0737c2f0',
     weekNumber: 3,
   },
   {
@@ -47,7 +47,7 @@ const week3HelpDeskFlashcards: Flashcard[] = [
     back: 'Guide them to check video cable connections and try a different cable. "No Signal" with working audio suggests video connection issues. Check cable connections, try different cables, and verify correct input source.',
     category: 'Week 3 Help Desk Scenarios',
     difficulty: 'Easy',
-    topicId: 'week3-helpdesk',
+    topicId: '71c04cd6-3deb-4f89-a549-ca8d0737c2f0',
     weekNumber: 3,
   },
   {
@@ -56,7 +56,7 @@ const week3HelpDeskFlashcards: Flashcard[] = [
     back: 'Suggest testing memory (RAM) and checking for overheating. Random crashes, blue screens, and application failures often indicate memory problems or overheating, especially under load (multiple programs).',
     category: 'Week 3 Help Desk Scenarios',
     difficulty: 'Hard',
-    topicId: 'week3-helpdesk',
+    topicId: '71c04cd6-3deb-4f89-a549-ca8d0737c2f0',
     weekNumber: 3,
   },
 ];
@@ -66,9 +66,7 @@ export const useFlashcards = (topicId?: string, weekNumber?: number) => {
     queryKey: ['flashcards', topicId, weekNumber],
     queryFn: async () => {
       // If requesting Week 3 Help Desk Scenarios, return hardcoded flashcards
-      if (topicId === 'week3-helpdesk' || 
-          (topicId && topicId.toLowerCase().includes('help desk')) ||
-          (topicId && topicId.toLowerCase().includes('helpdesk'))) {
+      if (topicId === '71c04cd6-3deb-4f89-a549-ca8d0737c2f0') {
         console.log('Returning Week 3 Help Desk flashcards for topicId:', topicId);
         return week3HelpDeskFlashcards;
       }
