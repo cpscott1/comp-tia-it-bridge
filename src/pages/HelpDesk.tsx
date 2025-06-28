@@ -10,8 +10,6 @@ import { useWeekProgress } from "@/hooks/useWeekProgress";
 import { Textarea } from "@/components/ui/textarea";
 import { useSubmitDocumentation } from "@/hooks/useDocumentationSubmissions";
 import { useToast } from "@/hooks/use-toast";
-import { usePracticeQuestions } from "@/hooks/usePracticeQuestions";
-import { supabase } from "@/integrations/supabase/client";
 
 interface HelpDeskScenario {
   id: string;
@@ -34,59 +32,143 @@ const HelpDesk = () => {
   const [documentation, setDocumentation] = useState("");
   const [completedScenarios, setCompletedScenarios] = useState<string[]>([]);
   const [isSubmittingDoc, setIsSubmittingDoc] = useState(false);
-  const [helpDeskScenarios, setHelpDeskScenarios] = useState<HelpDeskScenario[]>([]);
-  const [loading, setLoading] = useState(true);
 
   const submitDocumentation = useSubmitDocumentation();
   const { toast } = useToast();
 
-  // Fetch Help Desk scenarios from database
-  useEffect(() => {
-    const fetchHelpDeskScenarios = async () => {
-      try {
-        // Get the Help Desk Scenarios topic for current week
-        const { data: topic } = await supabase
-          .from('quiz_topics')
-          .select('id')
-          .eq('name', `Week ${currentWeek} Help Desk Scenarios`)
-          .single();
-
-        if (topic) {
-          const { data: questions } = await supabase
-            .from('practice_questions')
-            .select('*')
-            .eq('topic_id', topic.id)
-            .eq('week_number', currentWeek);
-
-          if (questions) {
-            const scenarios: HelpDeskScenario[] = questions.map((q, index) => ({
-              id: q.id,
-              title: `Hardware Scenario ${index + 1}`,
-              description: q.question.split(':')[1]?.split('.')[0]?.trim() || 'Hardware troubleshooting scenario',
-              ticket: q.question.replace(/^SCENARIO:\s*/, ''),
-              week: currentWeek,
-              difficulty: q.difficulty as 'Easy' | 'Medium' | 'Hard',
-              options: q.options as string[],
-              correctAnswer: q.correct_answer,
-              rationale: q.explanation
-            }));
-            setHelpDeskScenarios(scenarios);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching help desk scenarios:', error);
-        toast({
-          title: "Error loading scenarios",
-          description: "Could not load help desk scenarios from database.",
-          variant: "destructive"
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchHelpDeskScenarios();
-  }, [currentWeek, toast]);
+  // Predefined help desk scenarios
+  const helpDeskScenarios: HelpDeskScenario[] = [
+    // Week 2 scenarios
+    {
+      id: "w2-scenario-1",
+      title: "PC Won't Start",
+      description: "Computer completely unresponsive",
+      ticket: "My computer won't turn on at all. When I press the power button, nothing happens - no lights, no sounds, nothing. It was working fine yesterday.",
+      week: 2,
+      difficulty: 'Easy',
+      options: [
+        "Replace the motherboard immediately",
+        "Check power cable connections and try a different outlet",
+        "Remove all components and rebuild the PC",
+        "Wait 24 hours and try again"
+      ],
+      correctAnswer: 1,
+      rationale: "Always start with basic power troubleshooting - check connections, power outlet, and PSU switch before assuming hardware failure."
+    },
+    {
+      id: "w2-scenario-2",
+      title: "Random Shutdowns",
+      description: "System shutting down unexpectedly",
+      ticket: "My computer keeps shutting down randomly, especially when I'm playing games or using demanding software. It just turns off without any warning.",
+      week: 2,
+      difficulty: 'Medium',
+      options: [
+        "Reinstall the operating system",
+        "Check for overheating issues and clean cooling system",
+        "Replace the RAM",
+        "Update all software"
+      ],
+      correctAnswer: 1,
+      rationale: "Random shutdowns during high-performance tasks typically indicate overheating protection. Check temperatures and cooling system first."
+    },
+    {
+      id: "w2-scenario-3",
+      title: "Display Issues",
+      description: "Monitor not showing image",
+      ticket: "My screen is completely black but I can hear the computer running. The monitor power light is on but it says 'No Signal'.",
+      week: 2,
+      difficulty: 'Easy',
+      options: [
+        "Replace the graphics card",
+        "Check video cable connections and monitor input source",
+        "Replace the monitor",
+        "Reinstall Windows"
+      ],
+      correctAnswer: 1,
+      rationale: "No signal with working audio suggests video connection issues. Always check cables and connections first."
+    },
+    // Week 3 scenarios - using your specified scenarios
+    {
+      id: "w3-scenario-1",
+      title: "BIOS Configuration Issue",
+      description: "Boot failure after BIOS changes",
+      ticket: "I was trying to improve my computer's performance and went into the BIOS to change some settings. Now my computer won't boot at all - it just shows a black screen with a blinking cursor. I can get into BIOS setup, but I don't remember what I changed.",
+      week: 3,
+      difficulty: 'Medium',
+      options: [
+        "Tell them to buy a new computer",
+        "Guide them to reset BIOS to default settings",
+        "Recommend a complete Windows reinstall",
+        "Suggest they wait and try again tomorrow"
+      ],
+      correctAnswer: 1,
+      rationale: "BIOS changes can prevent boot. Resetting to defaults (Load Setup Defaults or similar option) usually resolves configuration-related boot issues."
+    },
+    {
+      id: "w3-scenario-2",
+      title: "Overheating and Performance",
+      description: "System overheating with performance issues",
+      ticket: "My computer has been getting really slow lately, and yesterday it shut down by itself while I was working on a presentation. When I touched the case, it felt very hot. It's been making more noise than usual too.",
+      week: 3,
+      difficulty: 'Medium',
+      options: [
+        "Recommend they use the computer less frequently",
+        "Suggest checking cooling system, cleaning dust, and verifying fan operation",
+        "Tell them the noise is normal and ignore it",
+        "Recommend immediately replacing the motherboard"
+      ],
+      correctAnswer: 1,
+      rationale: "Symptoms indicate overheating: performance degradation, automatic shutdown, excessive heat and noise. Cooling system maintenance is needed."
+    },
+    {
+      id: "w3-scenario-3",
+      title: "Hard Drive Failure",
+      description: "Drive making clicking sounds with errors",
+      ticket: "My computer is making weird clicking sounds, especially when I try to open files. Sometimes programs freeze, and this morning I got an error message saying 'disk read error.' I'm worried about losing my important documents.",
+      week: 3,
+      difficulty: 'Hard',
+      options: [
+        "Tell them the clicking is normal hard drive operation",
+        "Recommend immediately backing up data and replacing the drive",
+        "Suggest defragmenting the hard drive to fix the sounds",
+        "Advise running disk cleanup to solve the problem"
+      ],
+      correctAnswer: 1,
+      rationale: "Clicking sounds with read errors indicate imminent hard drive failure. Data backup is critical before complete failure occurs."
+    },
+    {
+      id: "w3-scenario-4",
+      title: "Display Problems",
+      description: "Monitor shows no signal during operation",
+      ticket: "My monitor suddenly went black in the middle of working, but I can still hear sounds from the computer like email notifications. I checked that the monitor is plugged in and turned on, but it just shows 'No Signal' now.",
+      week: 3,
+      difficulty: 'Easy',
+      options: [
+        "Tell them to buy a new monitor immediately",
+        "Guide them to check video cable connections and try a different cable",
+        "Recommend restarting the computer 10 times",
+        "Suggest it's a virus and run antivirus software"
+      ],
+      correctAnswer: 1,
+      rationale: "'No Signal' with working audio suggests video connection issues. Check cable connections, try different cables, and verify correct input source."
+    },
+    {
+      id: "w3-scenario-5",
+      title: "Memory and Stability Issues",
+      description: "Random crashes and blue screens",
+      ticket: "My computer has been acting really strange lately. Programs keep crashing randomly, sometimes I get blue screens with lots of text, and occasionally the computer restarts by itself. It seems to happen more when I'm running multiple programs.",
+      week: 3,
+      difficulty: 'Hard',
+      options: [
+        "Tell them to only run one program at a time permanently",
+        "Suggest testing memory (RAM) and checking for overheating",
+        "Recommend never saving files to prevent crashes",
+        "Advise that random crashes are normal for all computers"
+      ],
+      correctAnswer: 1,
+      rationale: "Random crashes, blue screens, and application failures often indicate memory problems or overheating, especially under load (multiple programs)."
+    }
+  ];
 
   const availableScenarios = helpDeskScenarios.filter(scenario => scenario.week <= currentWeek);
   const completedCount = completedScenarios.length;
@@ -163,19 +245,6 @@ const HelpDesk = () => {
       default: return 'bg-gray-100 text-gray-800';
     }
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center py-12">
-            <Monitor className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <div className="text-gray-500 text-lg">Loading help desk scenarios...</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (selectedScenario) {
     return (
