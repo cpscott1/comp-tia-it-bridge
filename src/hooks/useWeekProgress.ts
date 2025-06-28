@@ -24,31 +24,60 @@ export const useWeekProgress = () => {
         .from('user_week_progress')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
       
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error fetching week progress:', error);
-        throw error;
+        // If there's an error fetching, return default progress
+        return {
+          id: 'temp',
+          user_id: user.id,
+          current_week: 1,
+          completed_weeks: [],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        } as WeekProgress;
       }
       
-      // If no progress exists, create initial record
+      // If no progress exists, try to create initial record
       if (!data) {
-        const { data: newProgress, error: createError } = await supabase
-          .from('user_week_progress')
-          .insert({
+        try {
+          const { data: newProgress, error: createError } = await supabase
+            .from('user_week_progress')
+            .insert({
+              user_id: user.id,
+              current_week: 1,
+              completed_weeks: []
+            })
+            .select()
+            .maybeSingle();
+          
+          if (createError) {
+            console.error('Error creating week progress:', createError);
+            // Return default progress if creation fails
+            return {
+              id: 'temp',
+              user_id: user.id,
+              current_week: 1,
+              completed_weeks: [],
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            } as WeekProgress;
+          }
+          
+          return newProgress as WeekProgress;
+        } catch (err) {
+          console.error('Failed to create week progress:', err);
+          // Return default progress
+          return {
+            id: 'temp',
             user_id: user.id,
             current_week: 1,
-            completed_weeks: []
-          })
-          .select()
-          .single();
-        
-        if (createError) {
-          console.error('Error creating week progress:', createError);
-          throw createError;
+            completed_weeks: [],
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          } as WeekProgress;
         }
-        
-        return newProgress as WeekProgress;
       }
       
       return data as WeekProgress;
@@ -70,11 +99,29 @@ export const useAdvanceWeek = () => {
         .from('user_week_progress')
         .select('completed_weeks')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
       
-      if (!currentProgress) throw new Error('No progress found');
+      if (!currentProgress) {
+        // Create initial progress if it doesn't exist
+        const { data, error } = await supabase
+          .from('user_week_progress')
+          .insert({
+            user_id: user.id,
+            current_week: weekToComplete + 1,
+            completed_weeks: [weekToComplete]
+          })
+          .select()
+          .maybeSingle();
+        
+        if (error) {
+          console.error('Error creating week progress:', error);
+          throw error;
+        }
+        
+        return data;
+      }
       
-      const updatedCompletedWeeks = [...currentProgress.completed_weeks, weekToComplete];
+      const updatedCompletedWeeks = [...(currentProgress.completed_weeks || []), weekToComplete];
       
       const { data, error } = await supabase
         .from('user_week_progress')
@@ -85,7 +132,7 @@ export const useAdvanceWeek = () => {
         })
         .eq('user_id', user.id)
         .select()
-        .single();
+        .maybeSingle();
       
       if (error) {
         console.error('Error advancing week:', error);
