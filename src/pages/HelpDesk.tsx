@@ -38,54 +38,86 @@ const HelpDesk = () => {
 
   // Predefined help desk scenarios
   const helpDeskScenarios: HelpDeskScenario[] = [
-    // Week 2 scenarios
+    // Week 2 scenarios - all 5 scenarios
     {
       id: "w2-scenario-1",
-      title: "PC Won't Start",
+      title: "Power Supply Failure",
       description: "Computer completely unresponsive",
-      ticket: "My computer won't turn on at all. When I press the power button, nothing happens - no lights, no sounds, nothing. It was working fine yesterday.",
+      ticket: "My computer won't turn on at all. I was working yesterday and everything was fine, but this morning when I press the power button, nothing happens. No lights, no fans, completely dead.",
       week: 2,
       difficulty: 'Easy',
       options: [
-        "Replace the motherboard immediately",
-        "Check power cable connections and try a different outlet",
-        "Remove all components and rebuild the PC",
-        "Wait 24 hours and try again"
+        "Recommend immediately buying a new computer",
+        "Ask them to check power connections and try a different outlet",
+        "Tell them it's definitely a motherboard failure",
+        "Suggest they wait a few hours for it to 'rest'"
       ],
       correctAnswer: 1,
-      rationale: "Always start with basic power troubleshooting - check connections, power outlet, and PSU switch before assuming hardware failure."
+      rationale: "When a system shows no signs of power, first check the most basic power-related issues before diagnosing component failures."
     },
     {
       id: "w2-scenario-2",
-      title: "Random Shutdowns",
-      description: "System shutting down unexpectedly",
-      ticket: "My computer keeps shutting down randomly, especially when I'm playing games or using demanding software. It just turns off without any warning.",
+      title: "Overheating Issues",
+      description: "System shutting down during intensive tasks",
+      ticket: "My computer keeps shutting down randomly, especially when I'm playing games or using video editing software. It works fine for basic tasks like web browsing and email.",
       week: 2,
       difficulty: 'Medium',
       options: [
-        "Reinstall the operating system",
-        "Check for overheating issues and clean cooling system",
-        "Replace the RAM",
-        "Update all software"
+        "Tell them to stop using demanding software",
+        "Suggest the issue is caused by viruses",
+        "Recommend checking cooling system and cleaning dust",
+        "Advise purchasing a new graphics card immediately"
       ],
-      correctAnswer: 1,
-      rationale: "Random shutdowns during high-performance tasks typically indicate overheating protection. Check temperatures and cooling system first."
+      correctAnswer: 2,
+      rationale: "Random shutdowns during intensive tasks typically indicate overheating. The thermal protection system shuts down to prevent damage."
     },
     {
       id: "w2-scenario-3",
-      title: "Display Issues",
-      description: "Monitor not showing image",
-      ticket: "My screen is completely black but I can hear the computer running. The monitor power light is on but it says 'No Signal'.",
+      title: "Memory Installation Problem",
+      description: "RAM installation causing boot issues",
+      ticket: "I just installed new RAM in my computer, but now it won't boot. The fans spin up but I don't get any display, and I hear three short beeps when I turn it on.",
       week: 2,
-      difficulty: 'Easy',
+      difficulty: 'Medium',
       options: [
-        "Replace the graphics card",
-        "Check video cable connections and monitor input source",
-        "Replace the monitor",
-        "Reinstall Windows"
+        "Tell them the motherboard is dead",
+        "Suggest they return the RAM as defective",
+        "Ask them to reseat the RAM and check compatibility",
+        "Recommend formatting the hard drive"
+      ],
+      correctAnswer: 2,
+      rationale: "Three beeps typically indicate memory issues. The RAM may not be seated properly or may be incompatible with the system."
+    },
+    {
+      id: "w2-scenario-4",
+      title: "Storage Device Recognition",
+      description: "New SSD not being detected",
+      ticket: "I installed a new SSD in my computer, but it's not showing up in Windows. The old hard drive still works fine, but the computer doesn't seem to recognize the new SSD at all.",
+      week: 2,
+      difficulty: 'Medium',
+      options: [
+        "Tell them SSDs don't work with their computer",
+        "Guide them to check BIOS settings and disk management",
+        "Suggest the SSD is broken and needs replacement",
+        "Recommend reinstalling Windows completely"
       ],
       correctAnswer: 1,
-      rationale: "No signal with working audio suggests video connection issues. Always check cables and connections first."
+      rationale: "New drives often need to be initialized in Disk Management, and BIOS/UEFI settings may need adjustment to detect the drive."
+    },
+    {
+      id: "w2-scenario-5",
+      title: "CPU Installation Issue",
+      description: "CPU installation problems during build",
+      ticket: "I'm building my first computer and I think I may have installed the CPU wrong. The system powers on, all the fans spin, but I don't get any display and I hear one long beep followed by two short beeps.",
+      week: 2,
+      difficulty: 'Hard',
+      options: [
+        "Tell them to immediately order a new CPU",
+        "Suggest they check CPU installation and seating",
+        "Recommend they start over with all components",
+        "Advise that the power supply is insufficient"
+      ],
+      correctAnswer: 1,
+      rationale: "One long beep followed by two short beeps typically indicates CPU issues. The processor may not be properly seated or installed correctly."
     },
     // Week 3 scenarios - using your specified scenarios
     {
