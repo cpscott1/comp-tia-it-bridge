@@ -66,7 +66,10 @@ export const useFlashcards = (topicId?: string, weekNumber?: number) => {
     queryKey: ['flashcards', topicId, weekNumber],
     queryFn: async () => {
       // If requesting Week 3 Help Desk Scenarios, return hardcoded flashcards
-      if (topicId === 'week3-helpdesk') {
+      if (topicId === 'week3-helpdesk' || 
+          (topicId && topicId.toLowerCase().includes('help desk')) ||
+          (topicId && topicId.toLowerCase().includes('helpdesk'))) {
+        console.log('Returning Week 3 Help Desk flashcards for topicId:', topicId);
         return week3HelpDeskFlashcards;
       }
 
