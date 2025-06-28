@@ -114,23 +114,22 @@ export const useFlashcards = (topicId?: string, weekNumber?: number) => {
   return useQuery({
     queryKey: ['flashcards', topicId, weekNumber],
     queryFn: async () => {
+      console.log('useFlashcards called with:', { topicId, weekNumber });
+      
       // If requesting Help Desk Scenarios, return hardcoded flashcards
       if (topicId === '71c04cd6-3deb-4f89-a549-ca8d0737c2f0') {
-        console.log('Returning Help Desk flashcards for topicId:', topicId, 'weekNumber:', weekNumber);
+        console.log('Processing Help Desk flashcards for topicId:', topicId, 'weekNumber:', weekNumber);
         
-        // If no specific week is requested, return all available flashcards for the current week context
-        // This handles the case when weekNumber is undefined (which happens when selecting from topic list)
-        if (!weekNumber) {
-          // Return both weeks' flashcards when no specific week is requested
-          return [...week2HelpDeskFlashcards, ...week3HelpDeskFlashcards];
-        }
-        
+        // Always return flashcards for the specified week number
         if (weekNumber === 2) {
+          console.log('Returning Week 2 Help Desk flashcards:', week2HelpDeskFlashcards.length);
           return week2HelpDeskFlashcards;
         } else if (weekNumber === 3) {
+          console.log('Returning Week 3 Help Desk flashcards:', week3HelpDeskFlashcards.length);
           return week3HelpDeskFlashcards;
         } else {
-          // Fallback: return both weeks if week number doesn't match
+          // If no specific week is requested, return all available flashcards
+          console.log('No specific week requested, returning all Help Desk flashcards');
           return [...week2HelpDeskFlashcards, ...week3HelpDeskFlashcards];
         }
       }
