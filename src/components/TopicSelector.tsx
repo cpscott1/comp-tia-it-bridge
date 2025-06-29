@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Clock, BookOpen } from "lucide-react";
 import { QuizTopic } from "@/hooks/usePracticeQuestions";
@@ -74,6 +75,7 @@ const TopicCard = ({
 }) => {
   // Get questions for practice or flashcards based on the page
   const { data: allQuestions = [] } = usePracticeQuestions(topic.id);
+  // Always pass currentWeek to flashcards hook
   const { data: flashcardsData = [] } = useFlashcards(topic.id, currentWeek);
   
   console.log(`TopicCard ${topic.name} - Topic ID:`, topic.id);
