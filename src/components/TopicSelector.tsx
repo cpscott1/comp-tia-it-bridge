@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Clock, BookOpen } from "lucide-react";
 import { QuizTopic } from "@/hooks/usePracticeQuestions";
@@ -73,34 +72,24 @@ const TopicCard = ({
   isFlashcardsPage: boolean;
   onSelect: (topic: QuizTopic) => void; 
 }) => {
-  // For Help Desk Scenarios, we need to query with the current week to get the right count
-  const weekNumberForQuery = topic.id === '71c04cd6-3deb-4f89-a549-ca8d0737c2f0' ? currentWeek : undefined;
-  
   // Get questions for practice or flashcards based on the page
   const { data: allQuestions = [] } = usePracticeQuestions(topic.id);
-  const { data: flashcardsData = [] } = useFlashcards(topic.id, weekNumberForQuery);
+  const { data: flashcardsData = [] } = useFlashcards(topic.id, currentWeek);
   
   console.log(`TopicCard ${topic.name} - Topic ID:`, topic.id);
   console.log(`TopicCard ${topic.name} - Current week:`, currentWeek);
-  console.log(`TopicCard ${topic.name} - Week number for query:`, weekNumberForQuery);
   console.log(`TopicCard ${topic.name} - Flashcards data:`, flashcardsData);
   
   const weekQuestions = allQuestions.filter(q => q.week_number === currentWeek);
   
-  // For flashcards, if it's Help Desk Scenarios, the flashcardsData already contains the correct week's data
-  // For other topics, filter by current week
-  const weekFlashcards = topic.id === '71c04cd6-3deb-4f89-a549-ca8d0737c2f0' 
-    ? flashcardsData 
-    : flashcardsData.filter(f => f.weekNumber === currentWeek);
-  
   // Use appropriate count based on page type
-  const itemCount = isFlashcardsPage ? weekFlashcards.length : weekQuestions.length;
+  const itemCount = isFlashcardsPage ? flashcardsData.length : weekQuestions.length;
   const itemType = isFlashcardsPage ? "Flashcards" : "Questions";
   
   console.log(`TopicCard ${topic.name} - All questions:`, allQuestions.length);
   console.log(`TopicCard ${topic.name} - All flashcards:`, flashcardsData.length);
   console.log(`TopicCard ${topic.name} - Week ${currentWeek} questions:`, weekQuestions.length);
-  console.log(`TopicCard ${topic.name} - Week ${currentWeek} flashcards:`, weekFlashcards.length);
+  console.log(`TopicCard ${topic.name} - Week ${currentWeek} flashcards:`, flashcardsData.length);
   console.log(`TopicCard ${topic.name} - Item count (${itemType}):`, itemCount);
   
   // Get the most recent attempt for this topic AND current week specifically

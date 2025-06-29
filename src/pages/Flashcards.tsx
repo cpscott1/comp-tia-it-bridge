@@ -22,9 +22,8 @@ const Flashcards = () => {
   const { data: weekProgress } = useWeekProgress();
   const currentWeek = weekProgress?.current_week || 1;
   
-  // Pass currentWeek for Help Desk Scenarios, undefined for others to get all flashcards
-  const weekNumberForQuery = selectedTopic?.id === '71c04cd6-3deb-4f89-a549-ca8d0737c2f0' ? currentWeek : undefined;
-  const { data: flashcards = [], isLoading: flashcardsLoading } = useFlashcards(selectedTopic?.id, weekNumberForQuery);
+  // Use currentWeek for all topics to get the correct week's flashcards
+  const { data: flashcards = [], isLoading: flashcardsLoading } = useFlashcards(selectedTopic?.id, currentWeek);
 
   const currentFlashcard = flashcards[currentCard];
   const totalCards = flashcards.length;
