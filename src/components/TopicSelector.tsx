@@ -91,7 +91,47 @@ const TopicCard = ({
   console.log(`TopicCard ${topic.name} - Current week:`, currentWeek);
   console.log(`TopicCard ${topic.name} - Flashcards data:`, flashcardsData);
   
-  const weekQuestions = allQuestions.filter(q => q.week_number === currentWeek);
+  // Filter questions to match the same logic as Quiz component
+  const weekQuestions = allQuestions.filter(question => {
+    // Only include questions from the current week
+    if (question.week_number !== currentWeek) return false;
+    
+    // For Week 4, exclude help desk scenarios - they start with specific patterns
+    if (currentWeek === 4) {
+      const helpDeskPatterns = [
+        'Network Connectivity Issues:',
+        'Slow Wireless Performance:',
+        'Cable Connection Problem:',
+        'Wireless Security Configuration:',
+        'Network Printer Access Issues:'
+      ];
+      
+      const isHelpDeskScenario = helpDeskPatterns.some(pattern => 
+        question.question.startsWith(pattern)
+      );
+      
+      if (isHelpDeskScenario) return false;
+    }
+    
+    // For Week 3, exclude help desk scenarios as well
+    if (currentWeek === 3) {
+      const helpDeskPatterns = [
+        'Network Connectivity Issues:',
+        'Slow Wireless Performance:',
+        'Cable Connection Problem:',
+        'Wireless Security Configuration:',
+        'Network Printer Access Issues:'
+      ];
+      
+      const isHelpDeskScenario = helpDeskPatterns.some(pattern => 
+        question.question.startsWith(pattern)
+      );
+      
+      if (isHelpDeskScenario) return false;
+    }
+    
+    return true;
+  });
   
   // Use appropriate count based on page type
   const itemCount = isFlashcardsPage ? flashcardsData.length : weekQuestions.length;
@@ -99,7 +139,7 @@ const TopicCard = ({
   
   console.log(`TopicCard ${topic.name} - All questions:`, allQuestions.length);
   console.log(`TopicCard ${topic.name} - All flashcards:`, flashcardsData.length);
-  console.log(`TopicCard ${topic.name} - Week ${currentWeek} questions:`, weekQuestions.length);
+  console.log(`TopicCard ${topic.name} - Week ${currentWeek} questions (filtered):`, weekQuestions.length);
   console.log(`TopicCard ${topic.name} - Week ${currentWeek} flashcards:`, flashcardsData.length);
   console.log(`TopicCard ${topic.name} - Item count (${itemType}):`, itemCount);
   

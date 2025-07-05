@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { usePracticeQuestions, QuizTopic } from "@/hooks/usePracticeQuestions";
@@ -28,20 +27,41 @@ export const Quiz = ({ topic, onBack }: QuizProps) => {
     // Only include questions from the current week
     if (question.week_number !== currentWeek) return false;
     
-    // Exclude help desk scenarios - they start with specific patterns
-    const helpDeskPatterns = [
-      'Network Connectivity Issues:',
-      'Slow Wireless Performance:',
-      'Cable Connection Problem:',
-      'Wireless Security Configuration:',
-      'Network Printer Access Issues:'
-    ];
+    // For Week 4, exclude help desk scenarios - they start with specific patterns
+    if (currentWeek === 4) {
+      const helpDeskPatterns = [
+        'Network Connectivity Issues:',
+        'Slow Wireless Performance:',
+        'Cable Connection Problem:',
+        'Wireless Security Configuration:',
+        'Network Printer Access Issues:'
+      ];
+      
+      const isHelpDeskScenario = helpDeskPatterns.some(pattern => 
+        question.question.startsWith(pattern)
+      );
+      
+      if (isHelpDeskScenario) return false;
+    }
     
-    const isHelpDeskScenario = helpDeskPatterns.some(pattern => 
-      question.question.startsWith(pattern)
-    );
+    // For Week 3, exclude help desk scenarios as well
+    if (currentWeek === 3) {
+      const helpDeskPatterns = [
+        'Network Connectivity Issues:',
+        'Slow Wireless Performance:',
+        'Cable Connection Problem:',
+        'Wireless Security Configuration:',
+        'Network Printer Access Issues:'
+      ];
+      
+      const isHelpDeskScenario = helpDeskPatterns.some(pattern => 
+        question.question.startsWith(pattern)
+      );
+      
+      if (isHelpDeskScenario) return false;
+    }
     
-    return !isHelpDeskScenario;
+    return true;
   });
   
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
