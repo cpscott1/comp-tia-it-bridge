@@ -26,6 +26,14 @@ export const TopicSelector = ({ topics, onTopicSelect, loading }: TopicSelectorP
   console.log("TopicSelector - Available topics:", topics);
   console.log("TopicSelector - Is flashcards page:", isFlashcardsPage);
 
+  // Get the appropriate topic display name based on the week and content
+  const getTopicDisplayName = (topic: QuizTopic, week: number) => {
+    if (week === 4) {
+      return "Comparing Local Networking Hardware";
+    }
+    return topic.name;
+  };
+
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -47,9 +55,10 @@ export const TopicSelector = ({ topics, onTopicSelect, loading }: TopicSelectorP
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {topics.map((topic) => {
+        const displayName = getTopicDisplayName(topic, currentWeek);
         return <TopicCard 
           key={topic.id} 
-          topic={topic} 
+          topic={{ ...topic, name: displayName }}
           currentWeek={currentWeek}
           attempts={attempts}
           isFlashcardsPage={isFlashcardsPage}
