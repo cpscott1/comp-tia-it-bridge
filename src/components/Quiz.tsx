@@ -23,8 +23,26 @@ export const Quiz = ({ topic, onBack }: QuizProps) => {
   const saveAttempt = useSaveQuizAttempt();
   const { toast } = useToast();
   
-  // Filter questions to only show those from the current week
-  const questions = allQuestions.filter(question => question.week_number === currentWeek);
+  // Filter questions to only show those from the current week and exclude help desk scenarios
+  const questions = allQuestions.filter(question => {
+    // Only include questions from the current week
+    if (question.week_number !== currentWeek) return false;
+    
+    // Exclude help desk scenarios - they start with specific patterns
+    const helpDeskPatterns = [
+      'Network Connectivity Issues:',
+      'Slow Wireless Performance:',
+      'Cable Connection Problem:',
+      'Wireless Security Configuration:',
+      'Network Printer Access Issues:'
+    ];
+    
+    const isHelpDeskScenario = helpDeskPatterns.some(pattern => 
+      question.question.startsWith(pattern)
+    );
+    
+    return !isHelpDeskScenario;
+  });
   
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
