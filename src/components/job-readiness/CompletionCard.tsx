@@ -8,7 +8,7 @@ interface CompletionCardProps {
 }
 
 const CompletionCard = ({ progress }: CompletionCardProps) => {
-  if (progress !== 100) return null;
+  if (progress < 100) return null;
 
   return (
     <Card className="mt-6 bg-green-50 border-green-200">

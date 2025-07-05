@@ -8,7 +8,7 @@ interface ProgressOverviewProps {
 }
 
 const ProgressOverview = ({ completedCount, totalItems }: ProgressOverviewProps) => {
-  const progress = (completedCount / totalItems) * 100;
+  const progress = totalItems > 0 ? (completedCount / totalItems) * 100 : 0;
 
   return (
     <Card className="mb-6">
@@ -24,7 +24,7 @@ const ProgressOverview = ({ completedCount, totalItems }: ProgressOverviewProps)
             <div className="text-sm text-gray-600">Completed</div>
           </div>
           <div className="text-center p-3 bg-gray-50 rounded-lg">
-            <div className="text-xl font-bold text-gray-600">{totalItems - completedCount}</div>
+            <div className="text-xl font-bold text-gray-600">{Math.max(0, totalItems - completedCount)}</div>
             <div className="text-sm text-gray-600">Remaining</div>
           </div>
         </div>

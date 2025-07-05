@@ -30,6 +30,9 @@ export const WeekSelector = ({ courseWeeks, currentWeek, onWeekChange }: WeekSel
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
+  // Define the total number of weeks that currently have content
+  const TOTAL_WEEKS_WITH_CONTENT = 4;
+
   // Reset week progress mutation
   const resetToWeek = useMutation({
     mutationFn: async (targetWeek: number) => {
@@ -253,7 +256,7 @@ export const WeekSelector = ({ courseWeeks, currentWeek, onWeekChange }: WeekSel
           })}
         </div>
 
-        {weekProgress && currentWeek < 12 && !courseWeeks[currentWeek - 1]?.title.includes("Coming Soon") && (
+        {weekProgress && currentWeek < TOTAL_WEEKS_WITH_CONTENT && !courseWeeks[currentWeek - 1]?.title.includes("Coming Soon") && (
           <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
             <div>
               <h4 className="font-medium text-blue-900">Ready for next week?</h4>

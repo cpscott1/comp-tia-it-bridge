@@ -52,6 +52,9 @@ interface DocumentationSubmission {
 
 const InstructorDashboard = () => {
   const [selectedWeek, setSelectedWeek] = useState<number>(1);
+  
+  // Define the total number of weeks that currently have content
+  const TOTAL_WEEKS_WITH_CONTENT = 4;
 
   // Fetch all students (users with student role)
   const { data: students, isLoading: studentsLoading } = useQuery({
@@ -170,13 +173,13 @@ const InstructorDashboard = () => {
     },
   });
 
-  // Calculate stats from real data
+  // Calculate stats from real data with dynamic total weeks
   const stats = {
     totalStudents: students?.length || 0,
     averageProgress: students?.length ? 
       Math.round(students.reduce((acc, student) => {
         const completedWeeks = student.completed_weeks?.length || 0;
-        return acc + (completedWeeks / 2 * 100); // Assuming 2 weeks total
+        return acc + (completedWeeks / TOTAL_WEEKS_WITH_CONTENT * 100);
       }, 0) / students.length) : 0,
     activeThisWeek: students?.filter(student => {
       const lastActivity = student.quiz_attempts?.[0]?.completed_at;
@@ -197,7 +200,7 @@ const InstructorDashboard = () => {
 
   const getCompletionRate = (student: StudentData) => {
     const completedWeeks = student.completed_weeks?.length || 0;
-    return Math.round((completedWeeks / 2) * 100); // Assuming 2 weeks total
+    return Math.round((completedWeeks / TOTAL_WEEKS_WITH_CONTENT) * 100);
   };
 
   const getCompletionColor = (rate: number) => {
