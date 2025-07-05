@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -5,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { CheckCircle, Lock, Clock, RotateCcw } from "lucide-react";
 import { useWeekProgress, useAdvanceWeek } from "@/hooks/useWeekProgress";
 import { useUserQuizAttempts } from "@/hooks/useQuizAttempts";
+import { useQuizTopics } from "@/hooks/usePracticeQuestions";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,6 +25,7 @@ interface WeekSelectorProps {
 export const WeekSelector = ({ courseWeeks, currentWeek, onWeekChange }: WeekSelectorProps) => {
   const { data: weekProgress } = useWeekProgress();
   const { data: quizAttempts = [] } = useUserQuizAttempts();
+  const { data: currentWeekTopics = [] } = useQuizTopics(currentWeek);
   const advanceWeek = useAdvanceWeek();
   const { toast } = useToast();
   const { user } = useAuth();
@@ -92,21 +95,32 @@ export const WeekSelector = ({ courseWeeks, currentWeek, onWeekChange }: WeekSel
 
   // Check if current week objectives are completed
   const areCurrentWeekObjectivesCompleted = () => {
-    const weekAttempts = quizAttempts.filter(attempt => {
-      // This is a simple check - in practice you might want more sophisticated logic
-      return attempt.total_questions > 0;
-    });
+    // Get topic IDs for the current week
+    const currentWeekTopicIds = currentWeekTopics.map(topic => topic.id);
     
-    // For now, require at least one quiz attempt to advance
-    // In the future, this could be more sophisticated (e.g., minimum score, all topics covered)
-    return weekAttempts.length > 0;
+    // Check if user has quiz attempts for any of the current week's topics
+    const weekAttempts = quizAttempts.filter(attempt => 
+      currentWeekTopicIds.includes(attempt.topic_id)
+    );
+    
+    // Require at least one quiz attempt with a reasonable score (60% or higher) to advance
+    const hasGoodScore = weekAttempts.some(attempt => 
+      (attempt.score / attempt.total_questions) >= 0.6
+    );
+    
+    console.log('Current week topics:', currentWeekTopics);
+    console.log('Current week topic IDs:', currentWeekTopicIds);
+    console.log('Week attempts:', weekAttempts);
+    console.log('Has good score:', hasGoodScore);
+    
+    return hasGoodScore;
   };
 
   const handleAdvanceWeek = async () => {
     if (!areCurrentWeekObjectivesCompleted()) {
       toast({
         title: "Week not complete",
-        description: "Complete practice questions for this week before advancing.",
+        description: "Complete practice questions with at least 60% score to advance to the next week.",
         variant: "destructive",
       });
       return;
