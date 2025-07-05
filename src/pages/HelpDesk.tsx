@@ -6,7 +6,6 @@ import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, Monitor, CheckCircle, FileText, AlertCircle, Send } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useWeekProgress } from "@/hooks/useWeekProgress";
-import { usePracticeQuestions } from "@/hooks/usePracticeQuestions";
 import { Textarea } from "@/components/ui/textarea";
 import { useSubmitDocumentation } from "@/hooks/useDocumentationSubmissions";
 import { useToast } from "@/hooks/use-toast";
@@ -27,9 +26,6 @@ const HelpDesk = () => {
   const { data: weekProgress } = useWeekProgress();
   const currentWeek = weekProgress?.current_week || 1;
   
-  // Fetch database scenarios for help desk topics
-  const { data: databaseScenarios = [] } = usePracticeQuestions('71c04cd6-3deb-4f89-a549-ca8d0737c2f0', currentWeek);
-  
   const [selectedScenario, setSelectedScenario] = useState<HelpDeskScenario | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -40,8 +36,8 @@ const HelpDesk = () => {
   const submitDocumentation = useSubmitDocumentation();
   const { toast } = useToast();
 
-  // Predefined help desk scenarios for weeks 2 and 3
-  const hardcodedScenarios: HelpDeskScenario[] = [
+  // All help desk scenarios (hardcoded only)
+  const allScenarios: HelpDeskScenario[] = [
     {
       id: "w2-scenario-1",
       title: "Power Supply Failure",
@@ -60,7 +56,7 @@ const HelpDesk = () => {
     },
     {
       id: "w2-scenario-2",
-      title: "Overheating Issues",
+      title: "Overheating Issues", 
       description: "System shutting down during intensive tasks",
       ticket: "My computer keeps shutting down randomly, especially when I'm playing games or using video editing software. It works fine for basic tasks like web browsing and email.",
       week: 2,
@@ -201,26 +197,88 @@ const HelpDesk = () => {
       ],
       correctAnswer: 1,
       rationale: "Random crashes, blue screens, and application failures often indicate memory problems or overheating, especially under load (multiple programs)."
+    },
+    {
+      id: "w4-scenario-1",
+      title: "Network Connectivity Issues",
+      description: "Network troubleshooting scenario",
+      ticket: "I can't connect to the internet from my office computer. The network icon shows I'm connected to the network, but web pages won't load. Other computers in the office are working fine. I tried restarting my computer but that didn't help.",
+      week: 4,
+      difficulty: 'Medium',
+      options: [
+        "Tell them their computer is broken and needs replacement",
+        "Guide them to check IP configuration and try ipconfig /release /renew",
+        "Recommend buying a new network cable immediately",
+        "Suggest the problem is with their internet service provider"
+      ],
+      correctAnswer: 1,
+      rationale: "Local network connection with no internet suggests IP configuration issues. Releasing and renewing the IP address often resolves DHCP-related connectivity problems."
+    },
+    {
+      id: "w4-scenario-2",
+      title: "Slow Wireless Performance",
+      description: "Network troubleshooting scenario",
+      ticket: "My WiFi has been really slow lately, especially in the afternoon. I'm getting less than 1 Mbps when I usually get around 50 Mbps. The connection doesn't drop, it's just incredibly slow. My neighbor mentioned they just got new WiFi too.",
+      week: 4,
+      difficulty: 'Medium',
+      options: [
+        "Tell them WiFi is always slow and they should use wired connections",
+        "Suggest checking for interference and trying a different wireless channel",
+        "Recommend they stop using the internet in the afternoon",
+        "Advise that slow speeds are normal for wireless networks"
+      ],
+      correctAnswer: 1,
+      rationale: "Sudden slowdowns, especially at specific times, often indicate interference from neighboring networks. Changing wireless channels can resolve conflicts."
+    },
+    {
+      id: "w4-scenario-3",
+      title: "Cable Connection Problem",
+      description: "Network troubleshooting scenario",
+      ticket: "I was moving furniture in my office and accidentally pulled on some cables. Now my computer says 'network cable unplugged' even though I plugged everything back in. The cable looks fine to me, but I can't get online.",
+      week: 4,
+      difficulty: 'Easy',
+      options: [
+        "Tell them to buy a completely new computer",
+        "Guide them to check cable connections and test with a known-good cable",
+        "Suggest the issue is with their wireless router",
+        "Recommend calling their internet service provider immediately"
+      ],
+      correctAnswer: 1,
+      rationale: "Physical cable damage from pulling is common. The cable may look fine externally but have internal damage. Testing with a known-good cable confirms if cable replacement is needed."
+    },
+    {
+      id: "w4-scenario-4",
+      title: "Wireless Security Configuration",
+      description: "Network troubleshooting scenario",
+      ticket: "I just got a new wireless router and I can connect to it, but I'm worried about security. Right now anyone can connect to it without a password. How do I secure it so only my family can use it?",
+      week: 4,
+      difficulty: 'Easy',
+      options: [
+        "Tell them wireless networks can't be secured",
+        "Guide them to access router settings and configure WPA3 or WPA2 security",
+        "Suggest they return the router since it's not secure",
+        "Recommend they only use wired connections"
+      ],
+      correctAnswer: 1,
+      rationale: "Wireless security is essential. Guide them to access the router's web interface and configure WPA3 (or WPA2 if WPA3 isn't available) with a strong password."
+    },
+    {
+      id: "w4-scenario-5",
+      title: "Network Printer Access Issues",
+      description: "Network troubleshooting scenario",
+      ticket: "We have a network printer that everyone in the office used to be able to print to, but now only some computers can reach it. The printer shows up as online on some computers but shows as offline on others. The printer itself seems fine.",
+      week: 4,
+      difficulty: 'Hard',
+      options: [
+        "Tell them to buy individual printers for each computer",
+        "Check network connectivity, IP settings, and printer drivers on affected computers",
+        "Suggest the printer is broken and needs replacement",
+        "Recommend they restart all computers multiple times"
+      ],
+      correctAnswer: 1,
+      rationale: "Inconsistent printer access suggests network connectivity issues, IP conflicts, or driver problems on specific computers. Systematic troubleshooting of affected systems is needed."
     }
   ];
-
-  // Convert database scenarios to the expected format and combine with hardcoded ones
-  const convertDatabaseScenarios = (dbScenarios: any[]): HelpDeskScenario[] => {
-    return dbScenarios.map((scenario, index) => ({
-      id: `w4-db-scenario-${index + 1}`,
-      title: scenario.question.split(':')[0] || `Network Scenario ${index + 1}`,
-      description: "Network troubleshooting scenario",
-      ticket: scenario.question.substring(scenario.question.indexOf('"') + 1, scenario.question.lastIndexOf('"')),
-      week: scenario.week_number,
-      difficulty: scenario.difficulty as 'Easy' | 'Medium' | 'Hard',
-      options: scenario.options,
-      correctAnswer: scenario.correct_answer,
-      rationale: scenario.explanation
-    }));
-  };
-
-  const dbConvertedScenarios = convertDatabaseScenarios(databaseScenarios);
-  const allScenarios = [...hardcodedScenarios, ...dbConvertedScenarios];
   
   const availableScenarios = allScenarios.filter(scenario => scenario.week <= currentWeek);
   const completedCount = completedScenarios.length;
