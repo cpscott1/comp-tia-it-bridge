@@ -32,7 +32,7 @@ export const QuizHeader = ({
           Question {currentQuestionIndex + 1} of {totalQuestions} (Week {currentWeek})
         </div>
       </div>
-      <CardTitle>{topicName}</CardTitle>
+      <CardTitle>Week {currentWeek}: {topicName}</CardTitle>
       <CardDescription>
         <Progress value={progress} className="mt-2" />
       </CardDescription>
