@@ -89,12 +89,21 @@ const TopicCard = ({
   
   console.log(`TopicCard ${topic.name} - Topic ID:`, topic.id);
   console.log(`TopicCard ${topic.name} - Current week:`, currentWeek);
-  console.log(`TopicCard ${topic.name} - Flashcards data:`, flashcardsData);
+  console.log(`TopicCard ${topic.name} - All questions from API:`, allQuestions.length);
+  console.log(`TopicCard ${topic.name} - Questions by week:`, allQuestions.reduce((acc, q) => {
+    acc[q.week_number] = (acc[q.week_number] || 0) + 1;
+    return acc;
+  }, {} as Record<number, number>));
   
   // Filter questions to match the same logic as Quiz component
   const weekQuestions = allQuestions.filter(question => {
+    console.log(`Question: "${question.question.substring(0, 50)}..." - Week: ${question.week_number}`);
+    
     // Only include questions from the current week
-    if (question.week_number !== currentWeek) return false;
+    if (question.week_number !== currentWeek) {
+      console.log(`  Excluded: Wrong week (${question.week_number} vs ${currentWeek})`);
+      return false;
+    }
     
     // For Week 4, exclude help desk scenarios - they start with specific patterns
     if (currentWeek === 4) {
@@ -110,7 +119,10 @@ const TopicCard = ({
         question.question.startsWith(pattern)
       );
       
-      if (isHelpDeskScenario) return false;
+      if (isHelpDeskScenario) {
+        console.log(`  Excluded: Help desk scenario`);
+        return false;
+      }
     }
     
     // For Week 3, exclude help desk scenarios as well
@@ -127,9 +139,13 @@ const TopicCard = ({
         question.question.startsWith(pattern)
       );
       
-      if (isHelpDeskScenario) return false;
+      if (isHelpDeskScenario) {
+        console.log(`  Excluded: Help desk scenario`);
+        return false;
+      }
     }
     
+    console.log(`  Included: Valid question`);
     return true;
   });
   
@@ -137,10 +153,8 @@ const TopicCard = ({
   const itemCount = isFlashcardsPage ? flashcardsData.length : weekQuestions.length;
   const itemType = isFlashcardsPage ? "Flashcards" : "Questions";
   
-  console.log(`TopicCard ${topic.name} - All questions:`, allQuestions.length);
-  console.log(`TopicCard ${topic.name} - All flashcards:`, flashcardsData.length);
-  console.log(`TopicCard ${topic.name} - Week ${currentWeek} questions (filtered):`, weekQuestions.length);
-  console.log(`TopicCard ${topic.name} - Week ${currentWeek} flashcards:`, flashcardsData.length);
+  console.log(`TopicCard ${topic.name} - Final filtered questions for Week ${currentWeek}:`, weekQuestions.length);
+  console.log(`TopicCard ${topic.name} - Flashcards data:`, flashcardsData.length);
   console.log(`TopicCard ${topic.name} - Item count (${itemType}):`, itemCount);
   
   // Get the most recent attempt for this topic AND current week specifically
