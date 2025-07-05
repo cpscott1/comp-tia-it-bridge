@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -103,24 +102,22 @@ export const WeekSelector = ({ courseWeeks, currentWeek, onWeekChange }: WeekSel
       currentWeekTopicIds.includes(attempt.topic_id)
     );
     
-    // Require at least one quiz attempt with a reasonable score (60% or higher) to advance
-    const hasGoodScore = weekAttempts.some(attempt => 
-      (attempt.score / attempt.total_questions) >= 0.6
-    );
+    // Require at least one quiz attempt to advance (no minimum score required)
+    const hasAttempts = weekAttempts.length > 0;
     
     console.log('Current week topics:', currentWeekTopics);
     console.log('Current week topic IDs:', currentWeekTopicIds);
     console.log('Week attempts:', weekAttempts);
-    console.log('Has good score:', hasGoodScore);
+    console.log('Has attempts:', hasAttempts);
     
-    return hasGoodScore;
+    return hasAttempts;
   };
 
   const handleAdvanceWeek = async () => {
     if (!areCurrentWeekObjectivesCompleted()) {
       toast({
         title: "Week not complete",
-        description: "Complete practice questions with at least 60% score to advance to the next week.",
+        description: "Complete at least one practice quiz to advance to the next week.",
         variant: "destructive",
       });
       return;
