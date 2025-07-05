@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, Monitor, CheckCircle, FileText, AlertCircle, Send } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useWeekProgress } from "@/hooks/useWeekProgress";
+import { usePracticeQuestions } from "@/hooks/usePracticeQuestions";
 import { Textarea } from "@/components/ui/textarea";
 import { useSubmitDocumentation } from "@/hooks/useDocumentationSubmissions";
 import { useToast } from "@/hooks/use-toast";
@@ -26,6 +26,10 @@ interface HelpDeskScenario {
 const HelpDesk = () => {
   const { data: weekProgress } = useWeekProgress();
   const currentWeek = weekProgress?.current_week || 1;
+  
+  // Fetch database scenarios for help desk topics
+  const { data: databaseScenarios = [] } = usePracticeQuestions('71c04cd6-3deb-4f89-a549-ca8d0737c2f0', currentWeek);
+  
   const [selectedScenario, setSelectedScenario] = useState<HelpDeskScenario | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -36,9 +40,8 @@ const HelpDesk = () => {
   const submitDocumentation = useSubmitDocumentation();
   const { toast } = useToast();
 
-  // Predefined help desk scenarios
-  const helpDeskScenarios: HelpDeskScenario[] = [
-    // Week 2 scenarios - all 5 scenarios
+  // Predefined help desk scenarios for weeks 2 and 3
+  const hardcodedScenarios: HelpDeskScenario[] = [
     {
       id: "w2-scenario-1",
       title: "Power Supply Failure",
@@ -119,7 +122,6 @@ const HelpDesk = () => {
       correctAnswer: 1,
       rationale: "One long beep followed by two short beeps typically indicates CPU issues. The processor may not be properly seated or installed correctly."
     },
-    // Week 3 scenarios - using your specified scenarios
     {
       id: "w3-scenario-1",
       title: "BIOS Configuration Issue",
@@ -202,7 +204,25 @@ const HelpDesk = () => {
     }
   ];
 
-  const availableScenarios = helpDeskScenarios.filter(scenario => scenario.week <= currentWeek);
+  // Convert database scenarios to the expected format and combine with hardcoded ones
+  const convertDatabaseScenarios = (dbScenarios: any[]): HelpDeskScenario[] => {
+    return dbScenarios.map((scenario, index) => ({
+      id: `w4-db-scenario-${index + 1}`,
+      title: scenario.question.split(':')[0] || `Network Scenario ${index + 1}`,
+      description: "Network troubleshooting scenario",
+      ticket: scenario.question.substring(scenario.question.indexOf('"') + 1, scenario.question.lastIndexOf('"')),
+      week: scenario.week_number,
+      difficulty: scenario.difficulty as 'Easy' | 'Medium' | 'Hard',
+      options: scenario.options,
+      correctAnswer: scenario.correct_answer,
+      rationale: scenario.explanation
+    }));
+  };
+
+  const dbConvertedScenarios = convertDatabaseScenarios(databaseScenarios);
+  const allScenarios = [...hardcodedScenarios, ...dbConvertedScenarios];
+  
+  const availableScenarios = allScenarios.filter(scenario => scenario.week <= currentWeek);
   const completedCount = completedScenarios.length;
   const progress = availableScenarios.length > 0 ? (completedCount / availableScenarios.length) * 100 : 0;
 
