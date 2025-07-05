@@ -43,9 +43,14 @@ const Index = () => {
       title: "Troubleshooting PC Hardware",
       description: "BIOS/UEFI, Power Issues, Storage, Display, and Performance Troubleshooting"
     },
+    {
+      number: 4,
+      title: "Network Fundamentals",
+      description: "Cable types, networking hardware, wireless, network types, and help desk scenarios"
+    },
     // Future weeks - coming soon
-    ...Array.from({ length: 9 }, (_, i) => ({
-      number: i + 4,
+    ...Array.from({ length: 8 }, (_, i) => ({
+      number: i + 5,
       title: "Coming Soon",
       description: "Additional content will be available soon"
     }))
@@ -185,6 +190,14 @@ const Index = () => {
                               <li>Master BIOS/UEFI configuration</li>
                               <li>Diagnose power and performance issues</li>
                               <li>Troubleshoot storage and display problems</li>
+                            </>
+                          )}
+                          {selectedWeek === 4 && (
+                            <>
+                              <li>Understand network cable types and standards</li>
+                              <li>Learn about networking hardware components</li>
+                              <li>Practice wireless networking troubleshooting</li>
+                              <li>Handle real-world network support scenarios</li>
                             </>
                           )}
                         </ul>

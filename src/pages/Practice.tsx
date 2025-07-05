@@ -15,10 +15,10 @@ const Practice = () => {
 
   // Course weeks data for WeekSelector
   const courseWeeks = [
-    { number: 1, title: "IT Fundamentals", description: "Basic IT concepts and terminology" },
-    { number: 2, title: "Hardware Basics", description: "Computer hardware components" },
-    { number: 3, title: "Hardware Troubleshooting", description: "Diagnosing and fixing hardware issues" },
-    { number: 4, title: "Coming Soon", description: "Advanced topics" },
+    { number: 1, title: "Hardware Fundamentals", description: "Computer components, motherboards, CPUs, memory, storage devices" },
+    { number: 2, title: "Operating Systems", description: "Windows, macOS, Linux basics, file systems, and basic troubleshooting" },
+    { number: 3, title: "Troubleshooting PC Hardware", description: "BIOS/UEFI, Power Issues, Storage, Display, and Performance Troubleshooting" },
+    { number: 4, title: "Network Fundamentals", description: "Cable types, networking hardware, wireless, network types, and help desk scenarios" },
     { number: 5, title: "Coming Soon", description: "Advanced topics" },
     { number: 6, title: "Coming Soon", description: "Advanced topics" },
     { number: 7, title: "Coming Soon", description: "Advanced topics" },
