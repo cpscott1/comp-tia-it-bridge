@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Monitor, CheckCircle, FileText, AlertCircle, Send } from "lucide-react";
+import { ArrowLeft, Monitor, CheckCircle, AlertCircle, Send } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useWeekProgress } from "@/hooks/useWeekProgress";
 import { Textarea } from "@/components/ui/textarea";
