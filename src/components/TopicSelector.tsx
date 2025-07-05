@@ -34,6 +34,14 @@ export const TopicSelector = ({ topics, onTopicSelect, loading }: TopicSelectorP
     return topic.name;
   };
 
+  // Get the appropriate topic description based on the week and content
+  const getTopicDescription = (topic: QuizTopic, week: number) => {
+    if (week === 4) {
+      return "Week 4: Network Fundamentals - Cable types, networking hardware, wireless, and network types";
+    }
+    return topic.description;
+  };
+
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -56,9 +64,10 @@ export const TopicSelector = ({ topics, onTopicSelect, loading }: TopicSelectorP
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {topics.map((topic) => {
         const displayName = getTopicDisplayName(topic, currentWeek);
+        const displayDescription = getTopicDescription(topic, currentWeek);
         return <TopicCard 
           key={topic.id} 
-          topic={{ ...topic, name: displayName }}
+          topic={{ ...topic, name: displayName, description: displayDescription }}
           currentWeek={currentWeek}
           attempts={attempts}
           isFlashcardsPage={isFlashcardsPage}
