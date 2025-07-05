@@ -51,6 +51,16 @@ export const Quiz = ({ topic, onBack }: QuizProps) => {
 
   const currentQuestion = questions[currentQuestionIndex];
 
+  // Get the appropriate topic display name based on the week and content
+  const getTopicDisplayName = (topic: QuizTopic, week: number) => {
+    if (week === 4) {
+      return "Comparing Local Networking Hardware";
+    }
+    return topic.name;
+  };
+
+  const topicDisplayName = getTopicDisplayName(topic, currentWeek);
+
   const handleAnswerSelect = (answerIndex: number) => {
     const newAnswers = [...selectedAnswers];
     newAnswers[currentQuestionIndex] = answerIndex;
@@ -118,7 +128,7 @@ export const Quiz = ({ topic, onBack }: QuizProps) => {
     return (
       <div className="max-w-4xl mx-auto p-6">
         <QuizResults
-          topic={topic}
+          topic={{ ...topic, name: topicDisplayName }}
           questions={questions}
           selectedAnswers={selectedAnswers}
           score={score}
@@ -134,7 +144,7 @@ export const Quiz = ({ topic, onBack }: QuizProps) => {
     <div className="max-w-4xl mx-auto p-6">
       <Card>
         <QuizHeader
-          topicName={topic.name}
+          topicName={topicDisplayName}
           currentQuestionIndex={currentQuestionIndex}
           totalQuestions={questions.length}
           currentWeek={currentWeek}
