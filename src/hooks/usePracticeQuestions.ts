@@ -53,39 +53,71 @@ export const useQuizTopics = (weekNumber?: number) => {
   return useQuery({
     queryKey: ['quiz-topics', weekNumber],
     queryFn: async () => {
-      let query = supabase
-        .from('quiz_topics')
-        .select(`
-          *,
-          practice_questions!inner(week_number)
-        `);
+      console.log('useQuizTopics - Fetching topics for week:', weekNumber);
       
-      if (weekNumber) {
-        query = query.eq('practice_questions.week_number', weekNumber);
+      if (!weekNumber) {
+        // If no week number, get all topics
+        const { data, error } = await supabase
+          .from('quiz_topics')
+          .select('*')
+          .order('created_at');
+        
+        if (error) {
+          console.error('Error fetching all quiz topics:', error);
+          throw error;
+        }
+        
+        return data as QuizTopic[];
       }
       
-      const { data, error } = await query.order('created_at');
+      // Get topics that have questions for the specified week
+      const { data, error } = await supabase
+        .from('quiz_topics')
+        .select(`
+          id,
+          name,
+          description,
+          color,
+          created_at
+        `)
+        .order('created_at');
       
       if (error) {
         console.error('Error fetching quiz topics:', error);
         throw error;
       }
       
-      // Remove duplicates and clean up the data
-      const uniqueTopics = data?.reduce((acc: QuizTopic[], current: any) => {
-        const exists = acc.find(topic => topic.id === current.id);
-        if (!exists) {
-          acc.push({
-            id: current.id,
-            name: current.name,
-            description: current.description,
-            color: current.color
+      console.log('useQuizTopics - All topics fetched:', data?.length);
+      
+      // Now filter topics that have questions for the current week
+      const topicsWithQuestions: QuizTopic[] = [];
+      
+      for (const topic of data || []) {
+        const { data: questions, error: questionsError } = await supabase
+          .from('practice_questions')
+          .select('id')
+          .eq('topic_id', topic.id)
+          .eq('week_number', weekNumber)
+          .limit(1);
+        
+        if (questionsError) {
+          console.error('Error checking questions for topic:', topic.name, questionsError);
+          continue;
+        }
+        
+        if (questions && questions.length > 0) {
+          console.log('useQuizTopics - Topic has questions for week', weekNumber, ':', topic.name);
+          topicsWithQuestions.push({
+            id: topic.id,
+            name: topic.name,
+            description: topic.description,
+            color: topic.color
           });
         }
-        return acc;
-      }, []) || [];
+      }
       
-      return uniqueTopics;
+      console.log('useQuizTopics - Final topics with questions:', topicsWithQuestions.length);
+      return topicsWithQuestions;
     },
   });
 };
