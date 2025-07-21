@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,6 +47,7 @@ interface MeetingFormData {
   scheduled_time: string;
   end_time: string;
   assignment_week: string;
+  event_id: string;
 }
 
 const InstructorDashboard = () => {
@@ -54,10 +56,11 @@ const InstructorDashboard = () => {
   // Define the total number of weeks that currently have content
   const TOTAL_WEEKS_WITH_CONTENT = 5;
 
-  const { data: students, isLoading: studentsLoading } = useQuery<StudentData[]>({
+  const { data: students, isLoading: studentsLoading } = useQuery({
     queryKey: ['students'],
-    queryFn: async () => {
-      const { data, error } = await supabase
+    queryFn: async (): Promise<StudentData[]> => {
+      // First get students data
+      const { data: studentsData, error: studentsError } = await supabase
         .from('students')
         .select(`
           *,
@@ -69,18 +72,49 @@ const InstructorDashboard = () => {
         `)
         .order('name', { ascending: true });
 
-      if (error) {
-        console.error('Error fetching students:', error);
-        throw error;
+      if (studentsError) {
+        console.error('Error fetching students:', studentsError);
+        throw studentsError;
       }
 
-      return data;
+      // Get user week progress for each student
+      const studentIds = studentsData?.map(s => s.user_id).filter(Boolean) || [];
+      
+      let progressData: any[] = [];
+      if (studentIds.length > 0) {
+        const { data: progressResponse, error: progressError } = await supabase
+          .from('user_week_progress')
+          .select('*')
+          .in('user_id', studentIds);
+
+        if (progressError) {
+          console.error('Error fetching progress:', progressError);
+          // Don't throw error, just use empty progress
+        } else {
+          progressData = progressResponse || [];
+        }
+      }
+
+      // Combine the data
+      const combinedData: StudentData[] = studentsData?.map(student => {
+        const userProgress = progressData.find(p => p.user_id === student.user_id);
+        return {
+          id: student.id,
+          name: student.name,
+          email: student.email || '',
+          current_week: userProgress?.current_week || student.current_week || 1,
+          completed_weeks: userProgress?.completed_weeks || [],
+          quiz_attempts: student.quiz_attempts || []
+        };
+      }) || [];
+
+      return combinedData;
     },
   });
 
-  const { data: meetings, isLoading: meetingsLoading } = useQuery<Meeting[]>({
+  const { data: meetings, isLoading: meetingsLoading } = useQuery({
     queryKey: ['meetings'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Meeting[]> => {
       const { data, error } = await supabase
         .from('meetings')
         .select(`
@@ -98,11 +132,11 @@ const InstructorDashboard = () => {
         throw error;
       }
 
-      return data;
+      return data || [];
     },
   });
 
-  const upcomingMeetings = meetings?.filter(meeting => new Date(meeting.scheduled_time) > new Date());
+  const upcomingMeetings = meetings?.filter(meeting => new Date(meeting.scheduled_time) > new Date()) || [];
 
   const scheduleMeeting = useMutation({
     mutationFn: async (meetingData: MeetingFormData) => {
