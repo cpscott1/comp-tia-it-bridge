@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -95,37 +96,7 @@ export const WeekSelector = ({ courseWeeks, currentWeek, onWeekChange }: WeekSel
     return weekNumber <= weekProgress.current_week || isWeekCompleted(weekNumber);
   };
 
-  // Check if current week objectives are completed
-  const areCurrentWeekObjectivesCompleted = () => {
-    // Get topic IDs for the current week
-    const currentWeekTopicIds = currentWeekTopics.map(topic => topic.id);
-    
-    // Check if user has quiz attempts for any of the current week's topics
-    const weekAttempts = quizAttempts.filter(attempt => 
-      currentWeekTopicIds.includes(attempt.topic_id)
-    );
-    
-    // Require at least one quiz attempt to advance (no minimum score required)
-    const hasAttempts = weekAttempts.length > 0;
-    
-    console.log('Current week topics:', currentWeekTopics);
-    console.log('Current week topic IDs:', currentWeekTopicIds);
-    console.log('Week attempts:', weekAttempts);
-    console.log('Has attempts:', hasAttempts);
-    
-    return hasAttempts;
-  };
-
   const handleAdvanceWeek = async () => {
-    if (!areCurrentWeekObjectivesCompleted()) {
-      toast({
-        title: "Week not complete",
-        description: "Complete at least one practice quiz to advance to the next week.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
       await advanceWeek.mutateAsync(currentWeek);
       toast({
@@ -198,7 +169,7 @@ export const WeekSelector = ({ courseWeeks, currentWeek, onWeekChange }: WeekSel
           <div>
             <CardTitle>Course Progress</CardTitle>
             <CardDescription>
-              Complete each week's objectives to unlock the next week
+              Complete each week to unlock the next week
             </CardDescription>
           </div>
           {currentWeek > 1 && (
@@ -261,12 +232,12 @@ export const WeekSelector = ({ courseWeeks, currentWeek, onWeekChange }: WeekSel
             <div>
               <h4 className="font-medium text-blue-900">Ready for next week?</h4>
               <p className="text-sm text-blue-700">
-                Complete practice questions to advance to Week {currentWeek + 1}
+                Click to advance to Week {currentWeek + 1}
               </p>
             </div>
             <Button
               onClick={handleAdvanceWeek}
-              disabled={!areCurrentWeekObjectivesCompleted() || advanceWeek.isPending}
+              disabled={advanceWeek.isPending}
               size="sm"
             >
               {advanceWeek.isPending ? 'Advancing...' : 'Complete Week'}
