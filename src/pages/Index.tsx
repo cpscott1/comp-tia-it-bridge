@@ -48,9 +48,14 @@ const Index = () => {
       title: "Network Fundamentals",
       description: "Cable types, networking hardware, wireless, network types, and help desk scenarios"
     },
+    {
+      number: 5,
+      title: "Network Addressing & Internet Connections",
+      description: "TCP/UDP protocols, common ports, IP addressing, DHCP, DNS, and network services"
+    },
     // Future weeks - coming soon
-    ...Array.from({ length: 8 }, (_, i) => ({
-      number: i + 5,
+    ...Array.from({ length: 7 }, (_, i) => ({
+      number: i + 6,
       title: "Coming Soon",
       description: "Additional content will be available soon"
     }))
@@ -198,6 +203,14 @@ const Index = () => {
                               <li>Learn about networking hardware components</li>
                               <li>Practice wireless networking troubleshooting</li>
                               <li>Handle real-world network support scenarios</li>
+                            </>
+                          )}
+                          {selectedWeek === 5 && (
+                            <>
+                              <li>Master TCP and UDP protocol fundamentals</li>
+                              <li>Learn common network ports and services</li>
+                              <li>Understand IP addressing and subnetting</li>
+                              <li>Configure DHCP and DNS services</li>
                             </>
                           )}
                         </ul>
