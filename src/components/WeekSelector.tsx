@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +31,7 @@ export const WeekSelector = ({ courseWeeks, currentWeek, onWeekChange }: WeekSel
   const queryClient = useQueryClient();
 
   // Define the total number of weeks that currently have content
-  const TOTAL_WEEKS_WITH_CONTENT = 5;
+  const TOTAL_WEEKS_WITH_CONTENT = 6;
 
   // Reset week progress mutation
   const resetToWeek = useMutation({
