@@ -62,14 +62,7 @@ const InstructorDashboard = () => {
       // First get students data
       const { data: studentsData, error: studentsError } = await supabase
         .from('students')
-        .select(`
-          *,
-          quiz_attempts (
-            completed_at,
-            score,
-            total_questions
-          )
-        `)
+        .select('*')
         .order('name', { ascending: true });
 
       if (studentsError) {
@@ -81,7 +74,10 @@ const InstructorDashboard = () => {
       const studentIds = studentsData?.map(s => s.user_id).filter(Boolean) || [];
       
       let progressData: any[] = [];
+      let quizAttemptsData: any[] = [];
+      
       if (studentIds.length > 0) {
+        // Fetch progress data
         const { data: progressResponse, error: progressError } = await supabase
           .from('user_week_progress')
           .select('*')
@@ -89,22 +85,40 @@ const InstructorDashboard = () => {
 
         if (progressError) {
           console.error('Error fetching progress:', progressError);
-          // Don't throw error, just use empty progress
         } else {
           progressData = progressResponse || [];
+        }
+
+        // Fetch quiz attempts data separately
+        const { data: quizResponse, error: quizError } = await supabase
+          .from('quiz_attempts')
+          .select('*')
+          .in('user_id', studentIds)
+          .order('completed_at', { ascending: false });
+
+        if (quizError) {
+          console.error('Error fetching quiz attempts:', quizError);
+        } else {
+          quizAttemptsData = quizResponse || [];
         }
       }
 
       // Combine the data
       const combinedData: StudentData[] = studentsData?.map(student => {
         const userProgress = progressData.find(p => p.user_id === student.user_id);
+        const userQuizAttempts = quizAttemptsData.filter(q => q.user_id === student.user_id);
+        
         return {
           id: student.id,
           name: student.name,
           email: student.email || '',
           current_week: userProgress?.current_week || student.current_week || 1,
           completed_weeks: userProgress?.completed_weeks || [],
-          quiz_attempts: student.quiz_attempts || []
+          quiz_attempts: userQuizAttempts.map(attempt => ({
+            completed_at: attempt.completed_at,
+            score: attempt.score,
+            total_questions: attempt.total_questions
+          }))
         };
       }) || [];
 
