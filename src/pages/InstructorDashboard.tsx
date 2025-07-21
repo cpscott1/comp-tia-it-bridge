@@ -1,175 +1,127 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { 
-  Users, 
-  TrendingUp, 
-  FileText, 
-  Download, 
-  Calendar,
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  BarChart3,
-  MessageSquare
-} from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import InstructorCalendar from "@/components/calendar/InstructorCalendar";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Users, TrendingUp, BookOpen, Clock, Calendar, User, Mail, Phone, MapPin } from "lucide-react";
+import { toast } from "sonner";
+import { format } from "date-fns";
 
 interface StudentData {
   id: string;
-  first_name: string | null;
-  last_name: string | null;
-  email: string | null;
-  created_at: string;
-  current_week?: number;
-  completed_weeks?: number[];
-  quiz_attempts?: {
+  name: string;
+  email: string;
+  current_week: number;
+  completed_weeks: number[];
+  last_activity?: string;
+  quiz_attempts?: Array<{
+    completed_at: string;
     score: number;
     total_questions: number;
-    completed_at: string;
-    quiz_topics: {
-      name: string;
-    };
-  }[];
+  }>;
+  meetings?: Array<{
+    scheduled_time: string;
+    status: string;
+    assignment_week: string;
+  }>;
 }
 
-interface DocumentationSubmission {
+interface Meeting {
   id: string;
-  user_id: string;
-  scenario_id: string;
-  scenario_title: string;
-  documentation: string;
-  submitted_at: string;
-  student_name?: string;
-  student_email?: string;
+  scheduled_time: string;
+  end_time: string;
+  status: string;
+  assignment_week: string;
+  student_id: string;
+  student?: {
+    name: string;
+    email: string;
+  };
+}
+
+interface MeetingFormData {
+  student_id: string;
+  scheduled_time: string;
+  end_time: string;
+  assignment_week: string;
 }
 
 const InstructorDashboard = () => {
   const [selectedWeek, setSelectedWeek] = useState<number>(1);
   
   // Define the total number of weeks that currently have content
-  const TOTAL_WEEKS_WITH_CONTENT = 4;
+  const TOTAL_WEEKS_WITH_CONTENT = 5;
 
-  // Fetch all students (users with student role)
-  const { data: students, isLoading: studentsLoading } = useQuery({
+  const { data: students, isLoading: studentsLoading } = useQuery<StudentData[]>({
     queryKey: ['students'],
     queryFn: async () => {
-      console.log('Fetching students...');
-      
-      // First get all student profiles
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, first_name, last_name, email, created_at')
-        .eq('role', 'student')
-        .order('created_at', { ascending: false });
-      
-      if (profilesError) {
-        console.error('Error fetching student profiles:', profilesError);
-        throw profilesError;
-      }
-
-      if (!profiles || profiles.length === 0) {
-        console.log('No students found');
-        return [];
-      }
-
-      // Get week progress for all students
-      const { data: weekProgress, error: weekError } = await supabase
-        .from('user_week_progress')
-        .select('user_id, current_week, completed_weeks')
-        .in('user_id', profiles.map(p => p.id));
-
-      if (weekError) {
-        console.error('Error fetching week progress:', weekError);
-      }
-
-      // Get quiz attempts for all students
-      const { data: quizAttempts, error: quizError } = await supabase
-        .from('quiz_attempts')
+      const { data, error } = await supabase
+        .from('students')
         .select(`
-          user_id,
-          score,
-          total_questions,
-          completed_at,
-          quiz_topics (
-            name
+          *,
+          quiz_attempts (
+            completed_at,
+            score,
+            total_questions
           )
         `)
-        .in('user_id', profiles.map(p => p.id))
-        .order('completed_at', { ascending: false });
+        .order('name', { ascending: true });
 
-      if (quizError) {
-        console.error('Error fetching quiz attempts:', quizError);
-      }
-
-      // Combine the data
-      const studentsWithData: StudentData[] = profiles.map(profile => {
-        const userWeekProgress = weekProgress?.find(wp => wp.user_id === profile.id);
-        const userQuizAttempts = quizAttempts?.filter(qa => qa.user_id === profile.id) || [];
-
-        return {
-          ...profile,
-          current_week: userWeekProgress?.current_week || 1,
-          completed_weeks: userWeekProgress?.completed_weeks || [],
-          quiz_attempts: userQuizAttempts
-        };
-      });
-
-      console.log('Fetched students with data:', studentsWithData);
-      return studentsWithData;
-    },
-  });
-
-  // Fetch documentation submissions
-  const { data: documentationSubmissions, isLoading: documentationLoading } = useQuery({
-    queryKey: ['documentation-submissions'],
-    queryFn: async () => {
-      console.log('Fetching documentation submissions...');
-      
-      const { data: submissions, error } = await supabase
-        .from('documentation_submissions')
-        .select('*')
-        .order('submitted_at', { ascending: false });
-      
       if (error) {
-        console.error('Error fetching documentation submissions:', error);
+        console.error('Error fetching students:', error);
         throw error;
       }
 
-      // Get student profiles for the submissions
-      if (submissions && submissions.length > 0) {
-        const userIds = [...new Set(submissions.map(s => s.user_id))];
-        const { data: profiles, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, first_name, last_name, email')
-          .in('id', userIds);
+      return data;
+    },
+  });
 
-        if (profilesError) {
-          console.error('Error fetching student profiles for submissions:', profilesError);
-        }
+  const { data: meetings, isLoading: meetingsLoading } = useQuery<Meeting[]>({
+    queryKey: ['meetings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('meetings')
+        .select(`
+          *,
+          student:student_id (
+            name,
+            email
+          )
+        `)
+        .gte('scheduled_time', new Date().toISOString())
+        .order('scheduled_time', { ascending: true });
 
-        // Combine submissions with student data
-        const submissionsWithStudentData: DocumentationSubmission[] = submissions.map(submission => {
-          const student = profiles?.find(p => p.id === submission.user_id);
-          return {
-            ...submission,
-            student_name: student?.first_name && student?.last_name 
-              ? `${student.first_name} ${student.last_name}`
-              : student?.email || 'Unknown Student',
-            student_email: student?.email
-          };
-        });
-
-        return submissionsWithStudentData;
+      if (error) {
+        console.error('Error fetching meetings:', error);
+        throw error;
       }
 
-      return submissions as DocumentationSubmission[] || [];
+      return data;
+    },
+  });
+
+  const upcomingMeetings = meetings?.filter(meeting => new Date(meeting.scheduled_time) > new Date());
+
+  const scheduleMeeting = useMutation({
+    mutationFn: async (meetingData: MeetingFormData) => {
+      const { data, error } = await supabase
+        .from('meetings')
+        .insert([meetingData]);
+
+      if (error) {
+        console.error('Error scheduling meeting:', error);
+        throw error;
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      toast.success("Meeting scheduled successfully!");
+    },
+    onError: (error) => {
+      toast.error(`Failed to schedule meeting: ${error.message}`);
     },
   });
 
@@ -184,351 +136,208 @@ const InstructorDashboard = () => {
     activeThisWeek: students?.filter(student => {
       const lastActivity = student.quiz_attempts?.[0]?.completed_at;
       if (!lastActivity) return false;
-      const daysSince = Math.floor((Date.now() - new Date(lastActivity).getTime()) / (1000 * 60 * 60 * 24));
-      return daysSince <= 7;
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      return new Date(lastActivity) > weekAgo;
     }).length || 0,
-    atRiskStudents: students?.filter(student => {
-      const completedWeeks = student.completed_weeks?.length || 0;
-      return completedWeeks === 0;
-    }).length || 0
+    upcomingMeetings: upcomingMeetings?.length || 0,
   };
 
-  const generateWeeklyReport = () => {
-    console.log("Generating weekly report...");
-    alert("Weekly report would be generated and downloaded here.");
-  };
+  const filteredStudents = selectedWeek === 0 ? students : students?.filter(student => student.current_week === selectedWeek);
 
   const getCompletionRate = (student: StudentData) => {
     const completedWeeks = student.completed_weeks?.length || 0;
     return Math.round((completedWeeks / TOTAL_WEEKS_WITH_CONTENT) * 100);
   };
 
-  const getCompletionColor = (rate: number) => {
-    if (rate >= 80) return "text-green-600";
-    if (rate >= 60) return "text-yellow-600";
-    return "text-red-600";
+  const getCompletionColor = (completionRate: number) => {
+    if (completionRate < 50) return "red";
+    if (completionRate < 80) return "yellow";
+    return "green";
   };
 
-  const getStatusBadge = (rate: number) => {
-    if (rate >= 80) return <Badge className="bg-green-100 text-green-800">On Track</Badge>;
-    if (rate >= 60) return <Badge className="bg-yellow-100 text-yellow-800">At Risk</Badge>;
-    return <Badge className="bg-red-100 text-red-800">Behind</Badge>;
+  const getStatusBadge = (completionRate: number) => {
+    const color = getCompletionColor(completionRate);
+    let label = "Behind";
+    if (completionRate >= 50) label = "On Track";
+    if (completionRate >= 80) label = "Advanced";
+
+    return (
+      <Badge variant="secondary">
+        {label}
+      </Badge>
+    );
   };
 
-  const getLastActive = (student: StudentData) => {
-    const lastQuizAttempt = student.quiz_attempts?.[0]?.completed_at;
-    if (!lastQuizAttempt) return "Never";
-    
-    const daysSince = Math.floor((Date.now() - new Date(lastQuizAttempt).getTime()) / (1000 * 60 * 60 * 24));
-    if (daysSince === 0) return "Today";
-    if (daysSince === 1) return "1 day ago";
-    return `${daysSince} days ago`;
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const handleScheduleMeeting = async (formData: MeetingFormData) => {
+    try {
+      await scheduleMeeting.mutateAsync(formData);
+    } catch (error) {
+      console.error("Failed to schedule meeting:", error);
+    }
   };
 
   if (studentsLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-600"></div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">Loading dashboard...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Instructor Dashboard
-              </h1>
-              <p className="text-lg text-gray-600">
-                Monitor student progress and manage your CompTIA A+ class
-              </p>
-            </div>
-          </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Instructor Dashboard</h1>
+          <p className="text-muted-foreground mt-2">
+            Monitor student progress and manage your CompTIA A+ course
+          </p>
         </div>
+      </div>
 
-        {/* Quick Stats */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total Students</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.totalStudents}</p>
-                </div>
-                <Users className="h-8 w-8 text-blue-600" />
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Students</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalStudents}</div>
+            <p className="text-xs text-muted-foreground">
+              Active learners
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Average Progress</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.averageProgress}%</div>
+            <p className="text-xs text-muted-foreground">
+              Course completion
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active This Week</CardTitle>
+            <BookOpen className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.activeThisWeek}</div>
+            <p className="text-xs text-muted-foreground">
+              Students with recent activity
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Upcoming Meetings</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.upcomingMeetings}</div>
+            <p className="text-xs text-muted-foreground">
+              Scheduled this week
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-8 md:grid-cols-2">
+        {/* Student Progress */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Student Progress</CardTitle>
+                <CardDescription>Track individual student advancement</CardDescription>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Average Progress</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.averageProgress}%</p>
-                </div>
-                <TrendingUp className="h-8 w-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Active This Week</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.activeThisWeek}</p>
-                </div>
-                <Calendar className="h-8 w-8 text-purple-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">At Risk Students</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.atRiskStudents}</p>
-                </div>
-                <AlertCircle className="h-8 w-8 text-red-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Tabs defaultValue="students" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="students">Student Management</TabsTrigger>
-            <TabsTrigger value="calendar">Calendar</TabsTrigger>
-            <TabsTrigger value="documentation">Documentation</TabsTrigger>
-            <TabsTrigger value="progress">Progress Tracking</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="students" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Student Overview</CardTitle>
-                <CardDescription>
-                  Monitor individual student progress and engagement
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {students && students.length > 0 ? (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Student</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Current Week</TableHead>
-                        <TableHead>Completion Rate</TableHead>
-                        <TableHead>Last Active</TableHead>
-                        <TableHead>Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {students.map((student) => {
-                        const completionRate = getCompletionRate(student);
-                        const currentWeek = student.current_week || 1;
-                        const displayName = student.first_name && student.last_name 
-                          ? `${student.first_name} ${student.last_name}`
-                          : student.email || 'Unknown';
-                        
-                        return (
-                          <TableRow key={student.id}>
-                            <TableCell>
-                              <div className="flex items-center space-x-3">
-                                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                  <span className="font-semibold text-blue-600 text-sm">
-                                    {displayName.split(' ').map(n => n[0]).join('').substring(0, 2)}
-                                  </span>
-                                </div>
-                                <span className="font-medium">{displayName}</span>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-gray-600">{student.email}</TableCell>
-                            <TableCell>Week {currentWeek}</TableCell>
-                            <TableCell>
-                              <span className={`font-medium ${getCompletionColor(completionRate)}`}>
-                                {completionRate}%
-                              </span>
-                            </TableCell>
-                            <TableCell className="text-gray-600">{getLastActive(student)}</TableCell>
-                            <TableCell>{getStatusBadge(completionRate)}</TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                ) : (
-                  <div className="text-center py-8">
-                    <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Students Yet</h3>
-                    <p className="text-gray-600">Students will appear here once they sign up for the course.</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="calendar" className="space-y-6">
-            <InstructorCalendar />
-          </TabsContent>
-
-          <TabsContent value="documentation" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Student Documentation Submissions</CardTitle>
-                <CardDescription>
-                  Review documentation from help desk scenario practice
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {documentationLoading ? (
-                  <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
-                    <p className="text-gray-600 mt-2">Loading submissions...</p>
-                  </div>
-                ) : documentationSubmissions && documentationSubmissions.length > 0 ? (
-                  <div className="space-y-4">
-                    {documentationSubmissions.map((submission) => (
-                      <Card key={submission.id} className="border-l-4 border-l-blue-500">
-                        <CardHeader className="pb-3">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <CardTitle className="text-lg flex items-center space-x-2">
-                                <MessageSquare className="h-5 w-5 text-blue-600" />
-                                <span>{submission.scenario_title}</span>
-                              </CardTitle>
-                              <CardDescription>
-                                Submitted by {submission.student_name} • {formatDate(submission.submitted_at)}
-                              </CardDescription>
-                            </div>
-                            <Badge variant="outline">{submission.scenario_id}</Badge>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="bg-gray-50 p-4 rounded-lg">
-                            <h4 className="font-semibold text-gray-900 mb-2">Documentation:</h4>
-                            <p className="text-gray-700 whitespace-pre-wrap">{submission.documentation}</p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Documentation Submitted</h3>
-                    <p className="text-gray-600">Student documentation submissions will appear here.</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="progress" className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Week Completion Rates</CardTitle>
-                  <CardDescription>
-                    Assignment completion by week
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span>Week 1</span>
-                      <span>Data from database</span>
-                    </div>
-                    <Progress value={75} className="h-2" />
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span>Week 2</span>
-                      <span>Data from database</span>
-                    </div>
-                    <Progress value={60} className="h-2" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Help Desk Scenario Completion</CardTitle>
-                  <CardDescription>
-                    Student performance on practice scenarios
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Real data coming soon</span>
-                      <div className="flex items-center space-x-2">
-                        <Progress value={0} className="w-20 h-2" />
-                        <span className="text-xs text-gray-600">0%</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <Select value={selectedWeek.toString()} onValueChange={(value) => setSelectedWeek(parseInt(value))}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">All Weeks</SelectItem>
+                  <SelectItem value="1">Week 1</SelectItem>
+                  <SelectItem value="2">Week 2</SelectItem>
+                  <SelectItem value="3">Week 3</SelectItem>
+                  <SelectItem value="4">Week 4</SelectItem>
+                  <SelectItem value="5">Week 5</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          </TabsContent>
-
-          <TabsContent value="analytics" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Student Analytics</CardTitle>
-                <CardDescription>
-                  Real-time data from your students
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <BarChart3 className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-blue-600">
-                      {students?.reduce((acc, s) => acc + (s.quiz_attempts?.length || 0), 0) || 0}
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {filteredStudents?.map((student) => (
+                <div key={student.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full">
+                      <User className="w-4 h-4 text-blue-600" />
                     </div>
-                    <div className="text-sm text-gray-600">Total Quiz Attempts</div>
-                  </div>
-                  <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <Clock className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-green-600">
-                      {Math.round((students?.reduce((acc, s) => {
-                        const avgScore = s.quiz_attempts?.length ? 
-                          s.quiz_attempts.reduce((sum, attempt) => sum + (attempt.score || 0), 0) / s.quiz_attempts.length : 0;
-                        return acc + avgScore;
-                      }, 0) || 0) / (students?.length || 1))}%
+                    <div>
+                      <p className="font-medium">{student.name}</p>
+                      <p className="text-sm text-muted-foreground">{student.email}</p>
                     </div>
-                    <div className="text-sm text-gray-600">Avg. Quiz Score</div>
                   </div>
-                  <div className="text-center p-4 bg-purple-50 rounded-lg">
-                    <CheckCircle className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-purple-600">{stats.totalStudents}</div>
-                    <div className="text-sm text-gray-600">Enrolled Students</div>
+                  <div className="flex items-center space-x-3">
+                    <div className="text-right">
+                      <p className="text-sm font-medium">Week {student.current_week}</p>
+                      <p className="text-xs text-muted-foreground">{getCompletionRate(student)}% complete</p>
+                    </div>
+                    {getStatusBadge(getCompletionRate(student))}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+              ))}
+              {(!filteredStudents || filteredStudents.length === 0) && (
+                <div className="text-center py-8 text-muted-foreground">
+                  {selectedWeek === 0 ? "No students enrolled yet" : `No students in Week ${selectedWeek}`}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Upcoming Meetings */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Upcoming Meetings</CardTitle>
+            <CardDescription>Scheduled student meetings</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {upcomingMeetings?.slice(0, 5).map((meeting) => (
+                <div key={meeting.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <Calendar className="w-4 h-4 text-blue-500" />
+                    <div>
+                      <p className="font-medium">{meeting.student?.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {format(new Date(meeting.scheduled_time), 'MMM d, h:mm a')}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge variant="outline">
+                    {meeting.assignment_week}
+                  </Badge>
+                </div>
+              ))}
+              {(!upcomingMeetings || upcomingMeetings.length === 0) && (
+                <div className="text-center py-8 text-muted-foreground">
+                  No upcoming meetings scheduled
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

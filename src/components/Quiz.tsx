@@ -27,25 +27,8 @@ export const Quiz = ({ topic, onBack }: QuizProps) => {
     // Only include questions from the current week
     if (question.week_number !== currentWeek) return false;
     
-    // For Week 4, exclude help desk scenarios - they start with specific patterns
-    if (currentWeek === 4) {
-      const helpDeskPatterns = [
-        'Network Connectivity Issues:',
-        'Slow Wireless Performance:',
-        'Cable Connection Problem:',
-        'Wireless Security Configuration:',
-        'Network Printer Access Issues:'
-      ];
-      
-      const isHelpDeskScenario = helpDeskPatterns.some(pattern => 
-        question.question.startsWith(pattern)
-      );
-      
-      if (isHelpDeskScenario) return false;
-    }
-    
-    // For Week 3, exclude help desk scenarios as well
-    if (currentWeek === 3) {
+    // For Week 4 and Week 3, exclude help desk scenarios - they start with specific patterns
+    if (currentWeek === 4 || currentWeek === 3) {
       const helpDeskPatterns = [
         'Network Connectivity Issues:',
         'Slow Wireless Performance:',
@@ -75,6 +58,9 @@ export const Quiz = ({ topic, onBack }: QuizProps) => {
   const getTopicDisplayName = (topic: QuizTopic, week: number) => {
     if (week === 4) {
       return "Comparing Local Networking Hardware";
+    }
+    if (week === 5) {
+      return "Network Addressing & Internet Connections";
     }
     return topic.name;
   };

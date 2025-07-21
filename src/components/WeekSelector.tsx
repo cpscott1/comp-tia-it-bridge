@@ -31,7 +31,7 @@ export const WeekSelector = ({ courseWeeks, currentWeek, onWeekChange }: WeekSel
   const queryClient = useQueryClient();
 
   // Define the total number of weeks that currently have content
-  const TOTAL_WEEKS_WITH_CONTENT = 4;
+  const TOTAL_WEEKS_WITH_CONTENT = 5;
 
   // Reset week progress mutation
   const resetToWeek = useMutation({

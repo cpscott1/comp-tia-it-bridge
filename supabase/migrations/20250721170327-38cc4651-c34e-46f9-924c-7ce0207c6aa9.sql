@@ -1,0 +1,260 @@
+
+-- Insert Week 5 Network Addressing and Internet Connections questions
+-- First, ensure we have a topic for Week 5 networking
+INSERT INTO quiz_topics (name, description, color) 
+VALUES ('Network Addressing & Internet Connections', 'Week 5: TCP/UDP, Common Ports, IP Addressing, DHCP, DNS, and Network Services', 'green')
+ON CONFLICT DO NOTHING;
+
+-- Get the topic ID for Week 5 networking
+WITH networking_topic AS (
+  SELECT id FROM quiz_topics WHERE name = 'Network Addressing & Internet Connections'
+)
+
+-- Insert all 30 Week 5 practice questions
+INSERT INTO practice_questions (topic_id, question, options, correct_answer, explanation, difficulty, week_number) VALUES
+
+-- TCP vs UDP Protocols (Questions 1-5)
+((SELECT id FROM networking_topic),
+ 'What is the main difference between TCP and UDP?',
+ '["TCP is faster than UDP", "TCP is connection-oriented, UDP is connectionless", "TCP uses more ports than UDP", "TCP is encrypted, UDP is not"]'::jsonb,
+ 1,
+ 'TCP establishes a reliable connection with acknowledgments and sequencing, while UDP sends data without establishing a connection.',
+ 'Medium',
+ 5),
+
+((SELECT id FROM networking_topic),
+ 'Which protocol provides reliability features like acknowledgments and sequencing?',
+ '["UDP", "ICMP", "TCP", "DHCP"]'::jsonb,
+ 2,
+ 'TCP provides reliable delivery with features like acknowledgments, sequencing, and error correction.',
+ 'Easy',
+ 5),
+
+((SELECT id FROM networking_topic),
+ 'Which protocol would be best for streaming video where speed is more important than perfect delivery?',
+ '["TCP", "UDP", "ICMP", "ARP"]'::jsonb,
+ 1,
+ 'UDP''s low overhead and lack of retransmissions make it ideal for real-time applications like video streaming where speed matters more than perfect delivery.',
+ 'Medium',
+ 5),
+
+((SELECT id FROM networking_topic),
+ 'What is the typical overhead size for UDP headers compared to TCP?',
+ '["UDP: 8 bytes, TCP: 20-60 bytes", "UDP: 20 bytes, TCP: 8 bytes", "Both are 20 bytes", "Both are 8 bytes"]'::jsonb,
+ 0,
+ 'UDP has minimal 8-byte headers while TCP headers range from 20-60 bytes due to additional reliability features.',
+ 'Hard',
+ 5),
+
+((SELECT id FROM networking_topic),
+ 'Which protocol uses DHCP for automatic network configuration?',
+ '["TCP only", "UDP only", "Both TCP and UDP", "Neither TCP nor UDP"]'::jsonb,
+ 1,
+ 'DHCP uses UDP for its connectionless, broadcast-based automatic IP configuration process.',
+ 'Medium',
+ 5),
+
+-- Common Ports and Protocols (Questions 6-10)
+((SELECT id FROM networking_topic),
+ 'What port does HTTP use?',
+ '["21", "80", "443", "22"]'::jsonb,
+ 1,
+ 'HTTP (Hypertext Transfer Protocol) uses port 80 for unencrypted web traffic.',
+ 'Easy',
+ 5),
+
+((SELECT id FROM networking_topic),
+ 'Which port is used for HTTPS secure web traffic?',
+ '["80", "143", "443", "993"]'::jsonb,
+ 2,
+ 'HTTPS (HTTP Secure) uses port 443 for encrypted web traffic over SSL/TLS.',
+ 'Easy',
+ 5),
+
+((SELECT id FROM networking_topic),
+ 'What port does SSH use for secure remote access?',
+ '["21", "22", "23", "25"]'::jsonb,
+ 1,
+ 'SSH (Secure Shell) uses port 22 for encrypted remote access and file transfers.',
+ 'Easy',
+ 5),
+
+((SELECT id FROM networking_topic),
+ 'Which port is used by DNS for domain name resolution?',
+ '["25", "53", "80", "110"]'::jsonb,
+ 1,
+ 'DNS (Domain Name System) uses port 53 for translating domain names to IP addresses.',
+ 'Easy',
+ 5),
+
+((SELECT id FROM networking_topic),
+ 'What ports does FTP use?',
+ '["20 and 21", "80 and 443", "110 and 143", "67 and 68"]'::jsonb,
+ 0,
+ 'FTP uses port 21 for control commands and port 20 for data transfer.',
+ 'Medium',
+ 5),
+
+-- IP Addressing (Questions 11-15)
+((SELECT id FROM networking_topic),
+ 'Which of the following is a private IPv4 address range?',
+ '["172.16.0.0/12", "8.8.8.8/8", "1.1.1.1/8", "208.67.222.222/24"]'::jsonb,
+ 0,
+ '172.16.0.0 to 172.31.255.255 is one of the three private IPv4 address ranges defined in RFC 1918.',
+ 'Medium',
+ 5),
+
+((SELECT id FROM networking_topic),
+ 'What does APIPA stand for?',
+ '["Automatic Private IP Addressing", "Advanced Private Internet Protocol", "Automatic Public IP Assignment", "Advanced Protocol Internet Addressing"]'::jsonb,
+ 0,
+ 'APIPA automatically assigns IP addresses in the 169.254.x.x range when DHCP is unavailable.',
+ 'Easy',
+ 5),
+
+((SELECT id FROM networking_topic),
+ 'Which address range does APIPA use?',
+ '["192.168.1.0/24", "169.254.0.0/16", "10.0.0.0/8", "172.16.0.0/12"]'::jsonb,
+ 1,
+ 'APIPA uses the 169.254.0.0/16 range (169.254.0.1 to 169.254.255.254) for automatic addressing.',
+ 'Medium',
+ 5),
+
+((SELECT id FROM networking_topic),
+ 'What is the difference between static and dynamic IP addressing?',
+ '["Static IPs are faster than dynamic IPs", "Static IPs are manually configured, dynamic IPs are automatically assigned", "Static IPs use TCP, dynamic IPs use UDP", "There is no difference"]'::jsonb,
+ 1,
+ 'Static IP addresses are manually configured and don''t change, while dynamic IPs are automatically assigned by DHCP servers.',
+ 'Easy',
+ 5),
+
+((SELECT id FROM networking_topic),
+ 'What is the purpose of a default gateway?',
+ '["Assign IP addresses automatically", "Resolve domain names to IP addresses", "Route traffic to other networks", "Provide wireless connectivity"]'::jsonb,
+ 2,
+ 'The default gateway is the router that forwards traffic from the local network to other networks, including the internet.',
+ 'Medium',
+ 5),
+
+-- DHCP Configuration (Questions 16-20)
+((SELECT id FROM networking_topic),
+ 'What does DHCP stand for?',
+ '["Dynamic Host Configuration Protocol", "Domain Host Configuration Protocol", "Dynamic Hardware Configuration Protocol", "Domain Hardware Configuration Protocol"]'::jsonb,
+ 0,
+ 'DHCP automatically assigns IP addresses and network configuration to devices on a network.',
+ 'Easy',
+ 5),
+
+((SELECT id FROM networking_topic),
+ 'What ports does DHCP use?',
+ '["20 and 21", "67 and 68", "53 and 54", "80 and 443"]'::jsonb,
+ 1,
+ 'DHCP uses port 67 on the server and port 68 on the client for automatic IP configuration.',
+ 'Medium',
+ 5),
+
+((SELECT id FROM networking_topic),
+ 'What is a DHCP lease?',
+ '["The cost of using DHCP", "The time period an IP address is assigned to a device", "The maximum number of devices that can use DHCP", "The speed of IP address assignment"]'::jsonb,
+ 1,
+ 'A DHCP lease defines how long a device can use an assigned IP address before needing to renew it.',
+ 'Medium',
+ 5),
+
+((SELECT id FROM networking_topic),
+ 'What is a DHCP reservation?',
+ '["Backing up DHCP settings", "Assigning the same IP address to a specific device every time", "Reserving IP addresses for emergency use", "Limiting the number of DHCP clients"]'::jsonb,
+ 1,
+ 'DHCP reservations ensure specific devices (identified by MAC address) always receive the same IP address.',
+ 'Medium',
+ 5),
+
+((SELECT id FROM networking_topic),
+ 'What is a DHCP scope?',
+ '["The physical range of a DHCP server", "The range of IP addresses available for assignment", "The number of DHCP servers in a network", "The speed of DHCP assignments"]'::jsonb,
+ 1,
+ 'A DHCP scope defines the pool of IP addresses that can be dynamically assigned to clients.',
+ 'Medium',
+ 5),
+
+-- DNS Configuration (Questions 21-25)
+((SELECT id FROM networking_topic),
+ 'What does DNS stand for?',
+ '["Dynamic Name Service", "Domain Name System", "Direct Network Service", "Dynamic Network System"]'::jsonb,
+ 1,
+ 'DNS translates human-readable domain names (like google.com) into IP addresses.',
+ 'Easy',
+ 5),
+
+((SELECT id FROM networking_topic),
+ 'What type of DNS record maps a hostname to an IPv4 address?',
+ '["AAAA record", "MX record", "A record", "CNAME record"]'::jsonb,
+ 2,
+ 'A records map hostnames to IPv4 addresses, while AAAA records map to IPv6 addresses.',
+ 'Medium',
+ 5),
+
+((SELECT id FROM networking_topic),
+ 'What type of DNS record is used for mail servers?',
+ '["A record", "MX record", "CNAME record", "PTR record"]'::jsonb,
+ 1,
+ 'MX (Mail Exchange) records specify which mail servers are responsible for handling email for a domain.',
+ 'Medium',
+ 5),
+
+((SELECT id FROM networking_topic),
+ 'What does an AAAA record do?',
+ '["Maps hostname to IPv4 address", "Maps hostname to IPv6 address", "Provides mail server information", "Creates domain aliases"]'::jsonb,
+ 1,
+ 'AAAA records (quad-A) map hostnames to IPv6 addresses, similar to how A records map to IPv4.',
+ 'Medium',
+ 5),
+
+((SELECT id FROM networking_topic),
+ 'What is the purpose of DNS TXT records in email security?',
+ '["Store IPv6 addresses", "Create domain aliases", "Implement SPF, DKIM, and DMARC", "Configure mail servers"]'::jsonb,
+ 2,
+ 'TXT records are used for email security protocols like SPF, DKIM, and DMARC to prevent spam and spoofing.',
+ 'Hard',
+ 5),
+
+-- Network Services and Server Roles (Questions 26-30)
+((SELECT id FROM networking_topic),
+ 'What is the primary function of a print server?',
+ '["Store files for network access", "Manage network printing resources", "Provide internet access", "Authenticate users"]'::jsonb,
+ 1,
+ 'Print servers manage and share printers across a network, handling print jobs and printer management.',
+ 'Easy',
+ 5),
+
+((SELECT id FROM networking_topic),
+ 'What does AAA stand for in network services?',
+ '["Access, Authentication, Authorization", "Authentication, Authorization, Accounting", "Automatic Address Assignment", "Advanced Application Access"]'::jsonb,
+ 1,
+ 'AAA services handle user authentication (who you are), authorization (what you can do), and accounting (what you did).',
+ 'Medium',
+ 5),
+
+((SELECT id FROM networking_topic),
+ 'What is the purpose of a proxy server?',
+ '["Provide backup power", "Act as intermediary between clients and servers", "Store files permanently", "Manage network switches"]'::jsonb,
+ 1,
+ 'Proxy servers act as intermediaries, often providing caching, filtering, and anonymity services.',
+ 'Medium',
+ 5),
+
+((SELECT id FROM networking_topic),
+ 'What does a load balancer do?',
+ '["Balances electrical load in data centers", "Distributes network traffic across multiple servers", "Manages storage capacity", "Controls network switching"]'::jsonb,
+ 1,
+ 'Load balancers distribute incoming network traffic across multiple servers to ensure no single server becomes overwhelmed.',
+ 'Medium',
+ 5),
+
+((SELECT id FROM networking_topic),
+ 'What is the purpose of a UTM device?',
+ '["Manage user accounts", "Provide multiple security functions in one device", "Handle file transfers", "Manage network addressing"]'::jsonb,
+ 1,
+ 'UTM (Unified Threat Management) devices combine multiple security functions like firewall, antivirus, and intrusion detection in one appliance.',
+ 'Medium',
+ 5);
