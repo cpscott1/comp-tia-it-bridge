@@ -1,345 +1,227 @@
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { useWeekProgress } from "@/hooks/useWeekProgress";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  BookOpen, 
-  Brain, 
-  FileText, 
-  Users,
-  Trophy,
-  Clock,
-  CheckCircle
-} from "lucide-react";
-import { WeekSelector } from "@/components/WeekSelector";
-import { useWeekProgress } from "@/hooks/useWeekProgress";
-import { useUserQuizAttempts } from "@/hooks/useQuizAttempts";
-import { useAuth } from "@/hooks/useAuth";
-import { Link } from "react-router-dom";
+import { BookOpen, Users, Award, Clock, CheckCircle2, Target } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
-  const [selectedWeek, setSelectedWeek] = useState<number>(1);
-  const { data: weekProgress } = useWeekProgress();
-  const { data: quizAttempts = [] } = useUserQuizAttempts();
   const { user } = useAuth();
-
-  // Course structure
-  const courseWeeks = [
-    {
-      number: 1,
-      title: "Hardware Fundamentals",
-      description: "Computer components, motherboards, CPUs, memory, storage devices"
-    },
-    {
-      number: 2,
-      title: "Operating Systems",
-      description: "Windows, macOS, Linux basics, file systems, and basic troubleshooting"
-    },
-    {
-      number: 3,
-      title: "Troubleshooting PC Hardware",
-      description: "BIOS/UEFI, Power Issues, Storage, Display, and Performance Troubleshooting"
-    },
-    {
-      number: 4,
-      title: "Network Fundamentals",
-      description: "Cable types, networking hardware, wireless, network types, and help desk scenarios"
-    },
-    {
-      number: 5,
-      title: "Network Addressing & Internet Connections",
-      description: "TCP/UDP protocols, common ports, IP addressing, DHCP, DNS, and network services"
-    },
-    // Future weeks - coming soon
-    ...Array.from({ length: 7 }, (_, i) => ({
-      number: i + 6,
-      title: "Coming Soon",
-      description: "Additional content will be available soon"
-    }))
-  ];
-
+  const { data: weekProgress } = useWeekProgress();
+  const navigate = useNavigate();
   const currentWeek = weekProgress?.current_week || 1;
 
-  // Calculate progress stats
-  const totalWeeksCompleted = weekProgress?.completed_weeks.length || 0;
-  const totalQuizAttempts = quizAttempts.length;
-  const averageScore = quizAttempts.length > 0 
-    ? Math.round(quizAttempts.reduce((sum, attempt) => sum + ((attempt.score / attempt.total_questions) * 100), 0) / quizAttempts.length)
-    : 0;
+  // Define learning objectives for each week
+  const weekObjectives = {
+    1: [
+      "Identify computer components and their functions",
+      "Understand motherboard form factors and features", 
+      "Compare different CPU types and specifications",
+      "Differentiate between memory types and storage devices"
+    ],
+    2: [
+      "Compare Windows, macOS, and Linux operating systems",
+      "Understand file systems and directory structures",
+      "Perform basic OS installation and configuration",
+      "Apply fundamental troubleshooting methodology"
+    ],
+    3: [
+      "Configure BIOS/UEFI settings and features",
+      "Troubleshoot power supply and boot issues",
+      "Diagnose storage device problems and failures", 
+      "Resolve display and performance issues"
+    ],
+    4: [
+      "Compare network cable types and connectors",
+      "Understand networking hardware and wireless standards",
+      "Identify different network types and topologies",
+      "Apply network troubleshooting scenarios"
+    ],
+    5: [
+      "Understand TCP vs UDP protocols and their uses",
+      "Memorize common network ports and protocols",
+      "Configure IP addressing and subnet basics",
+      "Implement DHCP and DNS services"
+    ],
+    6: [
+      "Understand server roles and network services",
+      "Implement AAA (Authentication, Authorization, Accounting)",
+      "Configure network appliances and security devices",
+      "Manage legacy systems and IoT devices",
+      "Troubleshoot network connectivity issues",
+      "Implement VLANs and VPN technologies"
+    ]
+  };
 
-  const recentQuizAttempts = quizAttempts
-    .sort((a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime())
-    .slice(0, 5);
+  const currentObjectives = weekObjectives[currentWeek as keyof typeof weekObjectives] || [];
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Welcome to CompTIA A+ Prep</h1>
+          <p className="text-xl text-gray-600 mb-8">Your comprehensive study platform for IT certification success</p>
+          <Button onClick={() => navigate('/auth')} size="lg">
+            Get Started
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            CompTIA A+ Learning Platform
-          </h1>
-          <p className="text-lg text-gray-600">
-            Master IT fundamentals with hands-on practice and expert guidance
-          </p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+              Welcome back, {user.user_metadata?.first_name || 'Student'}!
+            </h1>
+            <p className="text-xl text-gray-600">
+              Continue your CompTIA A+ certification journey
+            </p>
+          </div>
 
-        {/* Progress Overview */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
+          {/* Current Week Progress */}
+          <Card className="mb-8 border-l-4 border-l-blue-500">
+            <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Current Week</p>
-                  <p className="text-2xl font-bold text-gray-900">{currentWeek}</p>
-                </div>
-                <BookOpen className="h-8 w-8 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Weeks Completed</p>
-                  <p className="text-2xl font-bold text-gray-900">{totalWeeksCompleted}</p>
-                </div>
-                <CheckCircle className="h-8 w-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Quiz Attempts</p>
-                  <p className="text-2xl font-bold text-gray-900">{totalQuizAttempts}</p>
-                </div>
-                <Brain className="h-8 w-8 text-purple-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Average Score</p>
-                  <p className="text-2xl font-bold text-gray-900">{averageScore}%</p>
-                </div>
-                <Trophy className="h-8 w-8 text-yellow-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Week Selection */}
-        <WeekSelector 
-          courseWeeks={courseWeeks}
-          currentWeek={selectedWeek}
-          onWeekChange={setSelectedWeek}
-        />
-
-        {/* Main Content Tabs */}
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="practice">Practice</TabsTrigger>
-            <TabsTrigger value="flashcards">Flashcards</TabsTrigger>
-            <TabsTrigger value="help-desk">Help Desk</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Current Week Content */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Week {selectedWeek}: {courseWeeks[selectedWeek - 1]?.title}</CardTitle>
+                  <CardTitle className="text-2xl">Week {currentWeek} Progress</CardTitle>
                   <CardDescription>
-                    {courseWeeks[selectedWeek - 1]?.description}
+                    {currentWeek === 1 && "Hardware Fundamentals"}
+                    {currentWeek === 2 && "Operating Systems"}
+                    {currentWeek === 3 && "Troubleshooting PC Hardware"}
+                    {currentWeek === 4 && "Network Fundamentals"}
+                    {currentWeek === 5 && "Network Addressing & Internet Connections"}
+                    {currentWeek === 6 && "Supporting Network Services"}
+                    {currentWeek > 6 && "Advanced Topics"}
                   </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {courseWeeks[selectedWeek - 1]?.title === "Coming Soon" ? (
-                    <div className="text-center py-8">
-                      <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">Content Coming Soon</h3>
-                      <p className="text-gray-600">This week's content is being prepared and will be available soon.</p>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="space-y-2">
-                        <h4 className="font-semibold">Learning Objectives:</h4>
-                        <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-                          {selectedWeek === 1 && (
-                            <>
-                              <li>Understand core hardware components</li>
-                              <li>Learn about motherboards and expansion slots</li>
-                              <li>Master CPU and memory fundamentals</li>
-                            </>
-                          )}
-                          {selectedWeek === 2 && (
-                            <>
-                              <li>Explore operating system basics</li>
-                              <li>Understand file systems and management</li>
-                              <li>Practice basic troubleshooting steps</li>
-                            </>
-                          )}
-                          {selectedWeek === 3 && (
-                            <>
-                              <li>Master BIOS/UEFI configuration</li>
-                              <li>Diagnose power and performance issues</li>
-                              <li>Troubleshoot storage and display problems</li>
-                            </>
-                          )}
-                          {selectedWeek === 4 && (
-                            <>
-                              <li>Understand network cable types and standards</li>
-                              <li>Learn about networking hardware components</li>
-                              <li>Practice wireless networking troubleshooting</li>
-                              <li>Handle real-world network support scenarios</li>
-                            </>
-                          )}
-                          {selectedWeek === 5 && (
-                            <>
-                              <li>Master TCP and UDP protocol fundamentals</li>
-                              <li>Learn common network ports and services</li>
-                              <li>Understand IP addressing and subnetting</li>
-                              <li>Configure DHCP and DNS services</li>
-                            </>
-                          )}
-                        </ul>
+                </div>
+                <Badge variant="outline" className="text-lg px-3 py-1">
+                  <Clock className="h-4 w-4 mr-1" />
+                  Week {currentWeek} of 12
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-semibold mb-3 flex items-center">
+                    <Target className="h-4 w-4 mr-2" />
+                    Learning Objectives
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {currentObjectives.map((objective, index) => (
+                      <div key={index} className="flex items-start space-x-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span className="text-sm text-gray-700">{objective}</span>
                       </div>
-                      
-                      <div className="flex space-x-3">
-                        <Link to="/practice">
-                          <Button className="flex-1">
-                            <Brain className="h-4 w-4 mr-2" />
-                            Start Practice Questions
-                          </Button>
-                        </Link>
-                        <Link to="/flashcards">
-                          <Button variant="outline" className="flex-1">
-                            <FileText className="h-4 w-4 mr-2" />
-                            Review Flashcards
-                          </Button>
-                        </Link>
-                      </div>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-              {/* Recent Activity */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recent Quiz Activity</CardTitle>
-                  <CardDescription>Your latest practice sessions</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {recentQuizAttempts.length > 0 ? (
-                    <div className="space-y-3">
-                      {recentQuizAttempts.map((attempt, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <div className="flex-1">
-                            <p className="font-medium text-sm">Quiz Attempt</p>
-                            <p className="text-xs text-gray-600">
-                              {new Date(attempt.completed_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-semibold text-sm">{Math.round((attempt.score / attempt.total_questions) * 100)}%</p>
-                            <p className="text-xs text-gray-600">{attempt.total_questions} questions</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <Brain className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">No Quiz Activity Yet</h3>
-                      <p className="text-gray-600">Start practicing to see your progress here.</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="practice" className="space-y-6">
-            <Card>
-              <CardHeader>
+          {/* Quick Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/practice')}>
+              <CardHeader className="text-center">
+                <BookOpen className="h-8 w-8 mx-auto text-blue-600 mb-2" />
                 <CardTitle>Practice Questions</CardTitle>
-                <CardDescription>
-                  Test your knowledge with CompTIA A+ practice questions
-                </CardDescription>
+                <CardDescription>Test your knowledge with interactive quizzes</CardDescription>
               </CardHeader>
-              <CardContent className="text-center py-8">
-                <Brain className="h-16 w-16 text-blue-600 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Ready to Practice?</h3>
-                <p className="text-gray-600 mb-6">
-                  Challenge yourself with questions tailored to Week {selectedWeek}
-                </p>
-                <Link to="/practice">
-                  <Button size="lg">
-                    Start Practice Session
-                  </Button>
-                </Link>
-              </CardContent>
             </Card>
-          </TabsContent>
 
-          <TabsContent value="flashcards" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Digital Flashcards</CardTitle>
-                <CardDescription>
-                  Review key concepts with interactive flashcards
-                </CardDescription>
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/flashcards')}>
+              <CardHeader className="text-center">
+                <Award className="h-8 w-8 mx-auto text-green-600 mb-2" />
+                <CardTitle>Flashcards</CardTitle>
+                <CardDescription>Review key concepts and terminology</CardDescription>
               </CardHeader>
-              <CardContent className="text-center py-8">
-                <FileText className="h-16 w-16 text-green-600 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Study with Flashcards</h3>
-                <p className="text-gray-600 mb-6">
-                  Master important terms and concepts for Week {selectedWeek}
-                </p>
-                <Link to="/flashcards">
-                  <Button size="lg" variant="outline">
-                    Start Flashcard Review
-                  </Button>
-                </Link>
-              </CardContent>
             </Card>
-          </TabsContent>
 
-          <TabsContent value="help-desk" className="space-y-6">
-            <Card>
-              <CardHeader>
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/help-desk')}>
+              <CardHeader className="text-center">
+                <Users className="h-8 w-8 mx-auto text-purple-600 mb-2" />
                 <CardTitle>Help Desk Scenarios</CardTitle>
-                <CardDescription>
-                  Practice real-world IT support scenarios
-                </CardDescription>
+                <CardDescription>Practice real-world troubleshooting</CardDescription>
               </CardHeader>
-              <CardContent className="text-center py-8">
-                <Users className="h-16 w-16 text-purple-600 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Real-World Practice</h3>
-                <p className="text-gray-600 mb-6">
-                  Handle customer scenarios and document your solutions
-                </p>
-                <Link to="/help-desk">
-                  <Button size="lg" variant="outline">
-                    Start Help Desk Practice
-                  </Button>
-                </Link>
-              </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/job-readiness')}>
+              <CardHeader className="text-center">
+                <Target className="h-8 w-8 mx-auto text-orange-600 mb-2" />
+                <CardTitle>Job Readiness</CardTitle>
+                <CardDescription>Prepare for your IT career</CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
+
+          {/* Study Tips */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Study Tips for Week {currentWeek}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {currentWeek === 1 && (
+                  <>
+                    <p>• Start with hardware identification exercises</p>
+                    <p>• Focus on understanding component relationships</p>
+                    <p>• Use visual aids to memorize form factors</p>
+                  </>
+                )}
+                {currentWeek === 2 && (
+                  <>
+                    <p>• Practice command-line operations in different OS environments</p>
+                    <p>• Understand file system differences between Windows, macOS, and Linux</p>
+                    <p>• Learn the troubleshooting methodology steps by heart</p>
+                  </>
+                )}
+                {currentWeek === 3 && (
+                  <>
+                    <p>• Practice accessing BIOS/UEFI on different systems</p>
+                    <p>• Learn to identify hardware failure symptoms</p>
+                    <p>• Understand POST beep codes and error messages</p>
+                  </>
+                )}
+                {currentWeek === 4 && (
+                  <>
+                    <p>• Memorize cable types and their maximum distances</p>
+                    <p>• Understand wireless standards and frequencies</p>
+                    <p>• Practice network topology identification</p>
+                  </>
+                )}
+                {currentWeek === 5 && (
+                  <>
+                    <p>• Memorize common port numbers and their protocols</p>
+                    <p>• Practice subnet mask calculations</p>
+                    <p>• Understand DHCP lease process and DNS resolution</p>
+                  </>
+                )}
+                {currentWeek === 6 && (
+                  <>
+                    <p>• Understand the differences between server roles</p>
+                    <p>• Learn AAA concepts and RADIUS implementation</p>
+                    <p>• Practice VLAN configuration scenarios</p>
+                    <p>• Study network security appliance functions</p>
+                  </>
+                )}
+                {currentWeek > 6 && (
+                  <>
+                    <p>• Continue practicing with previous week concepts</p>
+                    <p>• Focus on areas where you scored lowest</p>
+                    <p>• Review CompTIA objectives systematically</p>
+                  </>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
